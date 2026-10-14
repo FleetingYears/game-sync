@@ -13,9 +13,12 @@ namespace GameSync.Resource
     public sealed class ResourceManager : Singleton<ResourceManager>
     {
 #if UNITY_EDITOR
-        private Func<string, Type, Object> _editorLoad;
-        private Func<string, Type, Task<Object>> _editorLoadAsync;
-        private int _editorThreadId;
+        /// <summary>编辑器主线程同步资源加载入口。</summary>
+        private Func<string, Type, Object> m_EditorLoad;
+        /// <summary>编辑器主线程异步资源加载入口。</summary>
+        private Func<string, Type, Task<Object>> m_EditorLoadAsync;
+        /// <summary>注册资源后端的编辑器主线程 ID。</summary>
+        private int m_EditorThreadId;
 #endif
 
         private ResourceManager() { }
@@ -26,9 +29,9 @@ namespace GameSync.Resource
         {
             if (load == null) throw new ArgumentNullException(nameof(load));
             if (loadAsync == null) throw new ArgumentNullException(nameof(loadAsync));
-            _editorLoad = load;
-            _editorLoadAsync = loadAsync;
-            _editorThreadId = Thread.CurrentThread.ManagedThreadId;
+            m_EditorLoad = load;
+            m_EditorLoadAsync = loadAsync;
+            m_EditorThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
 #endif
@@ -65,12 +68,12 @@ namespace GameSync.Resource
             }
 
 #if UNITY_EDITOR
-            if (_editorLoad == null || _editorLoadAsync == null)
+            if (m_EditorLoad == null || m_EditorLoadAsync == null)
             {
                 throw new InvalidOperationException("Editor 资源读取后端尚未注册。");
             }
 
-            if (Thread.CurrentThread.ManagedThreadId != _editorThreadId)
+            if (Thread.CurrentThread.ManagedThreadId != m_EditorThreadId)
             {
                 throw new InvalidOperationException("资源加载必须从 Unity Editor 主线程调用。");
             }
@@ -94,7 +97,7 @@ namespace GameSync.Resource
                 return LoadEditorAsync<T>(path);
             }
 
-            return Task.FromResult(RequireAsset<T>(_editorLoad(path, typeof(T)), path));
+            return Task.FromResult(RequireAsset<T>(m_EditorLoad(path, typeof(T)), path));
 #else
             return Task.FromException<T>(new NotSupportedException("尚未配置 Player 的资源加载后端。"));
 #endif
@@ -103,7 +106,7 @@ namespace GameSync.Resource
 #if UNITY_EDITOR
         private async Task<T> LoadEditorAsync<T>(string path) where T : Object
         {
-            Object asset = await _editorLoadAsync(path, typeof(T));
+            Object asset = await m_EditorLoadAsync(path, typeof(T));
             return RequireAsset<T>(asset, path);
         }
 

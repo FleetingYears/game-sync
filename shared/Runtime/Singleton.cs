@@ -4,11 +4,12 @@ namespace GameSync
 {
     public abstract class Singleton<T> where T : Singleton<T>
     {
-        private static readonly Lazy<T> _instance = new Lazy<T>(CreateInstance);
+        /// <summary>延迟创建并缓存唯一实例。</summary>
+        private static readonly Lazy<T> m_Instance = new Lazy<T>(CreateInstance);
 
         public static T Instance
         {
-            get { return _instance.Value; }
+            get { return m_Instance.Value; }
         }
 
         protected Singleton() { }

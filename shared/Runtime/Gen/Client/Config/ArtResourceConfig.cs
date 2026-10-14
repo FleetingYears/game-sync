@@ -34,25 +34,28 @@ namespace GameSync.Config
         /// </summary>
         public string Remark { get; private set; } = string.Empty;
 
-        private static readonly object _sync = new object();
-        private static Dictionary<string, ArtResourceConfig> _index;
-        private static IReadOnlyList<ArtResourceConfig> _all;
+        /// <summary>保护配置加载和查询的一致性锁。</summary>
+        private static readonly object m_Sync = new object();
+        /// <summary>按主键索引当前配置记录。</summary>
+        private static Dictionary<string, ArtResourceConfig> m_Index;
+        /// <summary>按导出顺序保存当前全部配置的只读列表。</summary>
+        private static IReadOnlyList<ArtResourceConfig> m_All;
 
         /// <summary>是否已成功加载过配置。</summary>
         public static bool IsLoaded
         {
             get
             {
-                lock (_sync)
+                lock (m_Sync)
                 {
-                    return _index != null;
+                    return m_Index != null;
                 }
             }
         }
 
         private static void EnsureLoaded()
         {
-            if (_index == null)
+            if (m_Index == null)
             {
                 throw new InvalidOperationException("配置尚未加载：ArtResourceConfig");
             }
@@ -109,10 +112,10 @@ namespace GameSync.Config
                 }
                 reader.EnsureEnd();
                 var all = Array.AsReadOnly(rows);
-                lock (_sync)
+                lock (m_Sync)
                 {
-                    _index = index;
-                    _all = all;
+                    m_Index = index;
+                    m_All = all;
                 }
             }
         }
@@ -120,30 +123,30 @@ namespace GameSync.Config
         /// <summary>按 Key 获取配置；未找到时抛出 KeyNotFoundException。</summary>
         public static ArtResourceConfig Get(string key)
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _index[key];
+                return m_Index[key];
             }
         }
 
         /// <summary>按 Key 查询，返回是否找到；找不到时配置为 null。</summary>
         public static bool TryGet(string key, out ArtResourceConfig config)
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _index.TryGetValue(key, out config);
+                return m_Index.TryGetValue(key, out config);
             }
         }
 
         /// <summary>获取全部配置的只读列表，顺序与导出的主键排序一致。</summary>
         public static IReadOnlyList<ArtResourceConfig> GetAll()
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _all;
+                return m_All;
             }
         }
 

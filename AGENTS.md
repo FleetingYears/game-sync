@@ -27,6 +27,7 @@
 
 - Git 提交信息一律使用中文，包括标题和正文；保留必要的类名、路径、API 名称等技术标识。
 - 新增或修改的代码注释一律使用中文，包括行注释、块注释和 XML 文档注释；第三方原始资源及授权文本保持原样。
+- C# 私有成员变量统一使用 m_ 加大驼峰（例如 m_UnitViews），所有成员变量须有中文注释；Unity 序列化字段重命名时保留旧字段映射或迁移资产引用。
 - C# public 成员使用大驼峰（PascalCase）；优先通过 using 使用简洁类型名，非必要不使用类型全名或嵌套类。配置字典和列表直接作为配置类成员，不额外引入数据容器。
 
 - 普通管理器单例继承 shared/Runtime/Singleton<T>，派生类使用私有无参构造，通过 Instance 获取；共享 ConfigManager 放在 shared/Runtime/Config，客户端 ResourceManager 放在 Assets/Scripts/Logic/Resource。

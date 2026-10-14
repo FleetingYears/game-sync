@@ -6,30 +6,33 @@ namespace GameSync.Config
 {
     internal sealed class ConfigBinaryReader : IDisposable
     {
-        private readonly MemoryStream _stream;
-        private readonly BinaryReader _reader;
-        private readonly UTF8Encoding _encoding = new UTF8Encoding(false, true);
+        /// <summary>当前配置二进制数据流。</summary>
+        private readonly MemoryStream m_Stream;
+        /// <summary>读取小端二进制字段的读取器。</summary>
+        private readonly BinaryReader m_Reader;
+        /// <summary>拒绝非法字节序列的 UTF-8 编码器。</summary>
+        private readonly UTF8Encoding m_Encoding = new UTF8Encoding(false, true);
 
         public ConfigBinaryReader(byte[] bytes)
         {
             if (bytes == null) throw new ArgumentNullException(nameof(bytes));
-            _stream = new MemoryStream(bytes, false);
-            _reader = new BinaryReader(_stream, _encoding);
+            m_Stream = new MemoryStream(bytes, false);
+            m_Reader = new BinaryReader(m_Stream, m_Encoding);
         }
 
         private void Require(int count)
         {
-            if (count < 0 || count > _stream.Length - _stream.Position)
+            if (count < 0 || count > m_Stream.Length - m_Stream.Position)
                 throw new InvalidDataException("配置数据长度不合法或文件被截断。");
         }
 
         public int ReadHeader(string scope, string table, int fields, int key, int minimumRowSize)
         {
             Require(6);
-            if (_reader.ReadByte() != 'G' || _reader.ReadByte() != 'S'
-                || _reader.ReadByte() != 'C' || _reader.ReadByte() != 'F')
+            if (m_Reader.ReadByte() != 'G' || m_Reader.ReadByte() != 'S'
+                || m_Reader.ReadByte() != 'C' || m_Reader.ReadByte() != 'F')
                 throw new InvalidDataException("配置文件 magic 不正确。");
-            if (_reader.ReadUInt16() != 1)
+            if (m_Reader.ReadUInt16() != 1)
                 throw new InvalidDataException("不支持的配置格式版本。");
             if (ReadString() != scope || ReadString() != table)
                 throw new InvalidDataException("配置文件来源或表名与类不匹配。");
@@ -38,7 +41,7 @@ namespace GameSync.Config
             int keyIndex = ReadCount();
             if (fieldCount != fields || keyIndex != key)
                 throw new InvalidDataException("配置字段数或主键与类不匹配。");
-            if ((long)rowCount * minimumRowSize > _stream.Length - _stream.Position)
+            if ((long)rowCount * minimumRowSize > m_Stream.Length - m_Stream.Position)
                 throw new InvalidDataException("配置行数超出剩余文件长度。");
             return rowCount;
         }
@@ -57,13 +60,13 @@ namespace GameSync.Config
         private byte ReadByte()
         {
             Require(1);
-            return _reader.ReadByte();
+            return m_Reader.ReadByte();
         }
 
         private int ReadCount()
         {
             Require(4);
-            uint count = _reader.ReadUInt32();
+            uint count = m_Reader.ReadUInt32();
             if (count > int.MaxValue) throw new InvalidDataException("配置长度超出支持范围。");
             return (int)count;
         }
@@ -72,13 +75,13 @@ namespace GameSync.Config
         {
             int length = ReadCount();
             Require(length);
-            try { return _encoding.GetString(_reader.ReadBytes(length)); }
+            try { return m_Encoding.GetString(m_Reader.ReadBytes(length)); }
             catch (DecoderFallbackException exception)
             { throw new InvalidDataException("配置字符串不是合法 UTF-8。", exception); }
         }
 
-        public int ReadInt32() { Require(4); return _reader.ReadInt32(); }
-        public long ReadInt64() { Require(8); return _reader.ReadInt64(); }
+        public int ReadInt32() { Require(4); return m_Reader.ReadInt32(); }
+        public long ReadInt64() { Require(8); return m_Reader.ReadInt64(); }
 
         public bool ReadBoolean()
         {
@@ -90,7 +93,7 @@ namespace GameSync.Config
         public float ReadSingle()
         {
             Require(4);
-            float value = _reader.ReadSingle();
+            float value = m_Reader.ReadSingle();
             if (float.IsNaN(value) || float.IsInfinity(value)) throw new InvalidDataException("float 必须为有限值。");
             return value;
         }
@@ -98,7 +101,7 @@ namespace GameSync.Config
         public double ReadDouble()
         {
             Require(8);
-            double value = _reader.ReadDouble();
+            double value = m_Reader.ReadDouble();
             if (double.IsNaN(value) || double.IsInfinity(value)) throw new InvalidDataException("double 必须为有限值。");
             return value;
         }
@@ -113,7 +116,7 @@ namespace GameSync.Config
         public T[] ReadArray<T>(int minimumSize, Func<T> read)
         {
             int count = ReadCount();
-            if ((long)count * minimumSize > _stream.Length - _stream.Position)
+            if ((long)count * minimumSize > m_Stream.Length - m_Stream.Position)
                 throw new InvalidDataException("数组长度超出剩余数据长度。");
             var items = new T[count];
             for (int i = 0; i < count; i++) items[i] = read();
@@ -122,16 +125,16 @@ namespace GameSync.Config
 
         public void EnsureEnd()
         {
-            if (_stream.Position != _stream.Length)
+            if (m_Stream.Position != m_Stream.Length)
                 throw new InvalidDataException("配置文件存在多余数据。");
         }
 
         public void ValidateRows(int count, int minimumSize)
         {
-            if ((long)count * minimumSize > _stream.Length - _stream.Position)
+            if ((long)count * minimumSize > m_Stream.Length - m_Stream.Position)
                 throw new InvalidDataException("行数据长度不足，拒绝分配配置列表。");
         }
 
-        public void Dispose() { _reader.Dispose(); }
+        public void Dispose() { m_Reader.Dispose(); }
     }
 }

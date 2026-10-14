@@ -108,3 +108,7 @@ Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相
 - 2026-10-15：用户 Play 截图确认玩家外观已生成。最新 Editor.log 的三个异常分别来自 GameObjectInspector.OnDisable、TransformInspector.OnEnable → Editor.CreateSerializedObject、GameObjectInspector.OnEnable → PrefabUtility.IsPartOfVariantPrefab，均发生在 Play 域重载期间且早于场景反序列化完成；调用栈没有项目脚本。Inspector 的目标对象引用失效，具体失效对象与布局恢复原因无法由现有日志确认，待重建 Inspector/恢复布局后复查，未宣称 Console 无错误。
 
 - 2026-10-15：临时诊断定位到目标为空的残留 GameObjectInspector #-37602 与 TransformInspector #-37604；定向销毁失效 Editor 后用户确认 Play 无报错且玩家外观已生成。提交前已移除临时诊断和按实例 ID 清理代码，不纳入正式实现；尚无键盘移动或定点数模拟。共享构建产物已移至 .build/shared，避免本地包重复导入 DLL。
+
+- 2026-10-15：按用户要求建立完整目录骨架，后续 Input、View/Map/Camera/UI、三端 StateSync/FrameSync、共享 Math/Simulation/Protocol 和协议生成目录仅用 .gitkeep 保留，尚无对应实现。启动脚本移动至 Bootstrap 并保留 .meta/GUID；ClientGame 管理初始化与退出，UnitViewFactory 加载资源并实例化，UnitViewManager 维护 ID/外观映射与生命周期，UnitView 仅更新显示。展示单位 ID 为 1、名字 Unit_1，外观与出生位置保持；没有加入逻辑模拟或输入。退出时取消未完成的生成，创建失败清理实例。服务端构建和真实 Unity 程序集兼容编译均通过（0 警告、0 错误），场景脚本 GUID 静态核对通过；本次重构后 Unity Play 尚未验证，未新增测试代码。
+
+- 2026-10-15：客户端及共享配置、单例的私有成员变量统一为 m_ 加大驼峰，补充中文成员注释；导表模板同步调整并重新导出。Units 序列化字段迁移为 m_Units，保留 FormerlySerializedAs 与场景引用。

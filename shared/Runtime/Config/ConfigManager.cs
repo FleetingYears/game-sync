@@ -4,7 +4,8 @@ namespace GameSync.Config
 {
     public sealed partial class ConfigManager : Singleton<ConfigManager>
     {
-        private Func<string> _rootProvider = () => AppContext.BaseDirectory;
+        /// <summary>按运行环境获取配置根目录的方法。</summary>
+        private Func<string> m_RootProvider = () => AppContext.BaseDirectory;
 
         private ConfigManager() { }
 
@@ -12,13 +13,13 @@ namespace GameSync.Config
         public void SetRootProvider(Func<string> rootProvider)
         {
             if (rootProvider == null) throw new ArgumentNullException(nameof(rootProvider));
-            _rootProvider = rootProvider;
+            m_RootProvider = rootProvider;
         }
 
         /// <summary>自动获取运行环境的根目录并加载本端全部配置。</summary>
         public void LoadAll()
         {
-            LoadGenerated(_rootProvider());
+            LoadGenerated(m_RootProvider());
         }
 
         partial void LoadGenerated(string projectRoot);
