@@ -14,8 +14,11 @@
 - 添加根目录 Rider 运行配置 .run/Server.run.xml（启动服务端），通过 scripts/run-server.cmd 调用 dotnet run；适用于 Windows，需安装 .NET 10 SDK 和启用 Rider Shell Script 插件。脚本实际运行输出 Hello, World!、退出码 0；配置 XML 可解析，Rider 内识别和点击运行尚未验证。
 - 导入 Tiny Dungeon 的 132 张独立静态图片及 CC0 授权，移除重复图集、示例地图和预览说明。
 - 添加编辑器导入脚本：Sprite/Single、16 PPU、Point、关闭 Mip Maps、无压缩；Unity 已生成资源 .meta 文件。
+- 计划第 2 步的素材准备：132 张 Sprite 已按用途整理到 Tiles 下的 Environment、Props、Characters、Items、Projectiles、UI 共 19 个分类目录；保留原编号与原始 .meta，导入脚本改为递归扫描。2026-10-14 校验移动前后全部 132 张 PNG 及 132 个原始 .meta 的 SHA-256 一致；Unity 刷新、编译和 Console 检查尚未验证。素材整理位于 feat_common_sprite_categories。
 - 添加项目级 AGENTS.md，明确帧同步必须使用确定性数学和模拟逻辑。
 - 添加 tools/SyncMain 同步工具：将本地 main 固定提交分别合并到两个 dev，默认 fetch 后原子推送 origin；支持 -NoPush，恢复原分支，拒绝脏工作区与远程分叉，冲突时中止当前合并。2026-10-14 使用 Windows PowerShell 5.1 在临时仓库验证正常/重复同步、分叉合并与方案隔离、脏工作区拒绝、冲突恢复和本地裸仓库原子推送，均通过。随后在本项目实际执行 tools/SyncMain/sync-main.cmd：两个 dev 均快进合并 main（a421172），原子推送成功；核对本地与远程三个分支提交一致、两个 dev 相对 main 的文件差异为空，自动恢复 main，工作区干净。
+
+- 安装 2D Sprite 1.0.0，启用 Sprite Atlas V2，创建 client/Assets/Art/Atlases/KenneyTinyDungeon.spriteatlasv2，引用整个 Tiles 目录；图集设置为 Point、无压缩、关闭 Mip Maps/旋转/紧密打包、Padding 4、Include in Build。用户已在 Unity 生成图集预览；最终设置通过文件核对，未实际检查 Console 或执行场景/构建。
 
 ## 当前状态与限制
 

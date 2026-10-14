@@ -29,7 +29,7 @@ public sealed class KenneyTinyDungeonImporter : AssetPostprocessor
         EditorApplication.delayCall += () =>
         {
             if (!Directory.Exists(Tiles)) return;
-            foreach (string path in Directory.GetFiles(Tiles, "*.png"))
+            foreach (string path in Directory.GetFiles(Tiles, "*.png", SearchOption.AllDirectories))
             {
                 string asset = path.Replace('\\', '/');
                 var importer = AssetImporter.GetAtPath(asset) as TextureImporter;

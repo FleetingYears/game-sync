@@ -11,7 +11,7 @@
 
 - client/：Unity 工程。Assets 为资源和脚本，Packages 为依赖，ProjectSettings 为工程设置。
 - client/Assets/Scenes/：Unity 场景。
-- client/Assets/Art/KenneyTinyDungeon/Tiles/：132 张 16×16 静态像素图片；并非完整角色动画。
+- client/Assets/Art/KenneyTinyDungeon/Tiles/：132 张 16×16 静态像素图片，按 Environment、Props、Characters、Items、Projectiles、UI 及用途子目录分类，保留原编号文件名；并非完整角色动画。
 - client/Assets/Art/KenneyTinyDungeon/License.txt：Kenney 素材的 CC0 授权说明，随素材保留。
 - client/Assets/Editor/KenneyTinyDungeonImporter.cs：仅编辑器运行的像素导入配置。
 - server/Program.cs：服务端入口；server/server.csproj：项目配置；server/server.sln：IDE 解决方案。
