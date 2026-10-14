@@ -8,6 +8,8 @@
 
 ## 当前进度
 
+客户端美术资源源表 config/Excels/Client/art_resource.xlsx 已按四行表头整理，字符串 ID、Sprite/Prefab 枚举、无后缀资源路径，普通单元格，共 133 条（132 个 Sprite、1 个 Unit Prefab）。tools/ConfigExporter/export.cmd 已实际生成 client/Res/Config/art_resource.bytes；C# 数据类已生成至 client/Assets/Scripts/Gen/Config；配置按 Key 加载/查询已实现；Editor 资源加载已实现（默认异步、支持同步）；Player 加载未实现。
+
 132 张静态素材已按用途分类，导入脚本支持递归扫描；新增由 Kenney 官方 Tiled 示例转换的 GameMain 地牢场景，没有玩法实现。场景布局与使用方式见 [地牢场景说明](SCENE.md)。
 
 分类根目录：client/Assets/Art/KenneyTinyDungeon/Tiles/。
@@ -57,6 +59,32 @@ Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相
 - 2026-10-15：修复 Units 新节点 ID 超出有符号 64 位范围及 SceneRoots 遗漏 Units 引用的问题；改用 9000/9001，检查 ID 范围与唯一性、根节点列表、父子引用、17 个单位和 697 个 SpriteRenderer 均通过。先前静态检查未覆盖 ID 范围与 SceneRoots，不代表 Unity 导入通过；修复后仍需在 Unity 重新打开场景确认。
 
 - 2026-10-15：按用户要求将 Units 设为 MapRoot 子节点，保留单位世界坐标与显示数据；父子关系、SceneRoots 与 ID 范围重新核对通过。Unity 中重新打开后的结果待验证。
+
+- 2026-10-15：完成 Excel 二进制导表工具，11 项标准库 unittest 通过；实际使用 art_resource 源表校验/导出 132 行并独立解码核对。Unity 运行时加载尚未实施，详见 tools/ConfigExporter/README.md。
+
+- 2026-10-15：新增 C# 数据行类和枚举生成，16 项 unittest 通过，实际 ArtResourceConfig 及全类型夹具以 C# 7.3 编译通过，服务端构建通过。客户端代码在 Assets 外，Unity 接入未验证。
+
+- 2026-10-15：生成的 public 字段和枚举成员统一为 PascalCase，保留 Excel/二进制原字段名；普通枚举去掉 global::，同名遮蔽时保留全局限定。转换后名称冲突测试及含遮蔽情况的 C# 7.3 编译通过。
+
+- 2026-10-15：生成配置类新增 public const string BytesPath，分别指向对应端的相对 .bytes 路径；共享类路径按端区分，拒绝保留成员名冲突。16 项测试通过。
+
+- 2026-10-15：生成类新增 Load/LoadFromFile、Get/TryGet、GetAll、Find/FindAll，字典支持 string/int Key；配置属性改为 public/private set。生成纯 C# GSCF 读取辅助类，检查结构、边界与重复 Key，加载失败保留旧快照。16 项 Python 测试通过，C# 7.3 编译及 38 项运行检查通过；Unity Assets 接入、美术资源加载与跨平台读取尚未验证。
+
+- 2026-10-15：按用户可读性要求，配置类使用 using 和简洁类型名；字典/列表直接作为静态成员，不使用内部 State 类或独立数据容器，锁内同步切换和查询。16 项 Python 测试及 38 项 C# 运行检查通过。
+
+- 2026-10-15：双端生成 ConfigManager.Instance.LoadAll()，按本端/共享表清单依次加载；当前客户端包含 ArtResourceConfig，服务端为空入口。17 项 Python 测试、39 项 C# 运行检查及服务端构建通过；未接入 Unity 或服务端 Program 启动调用。
+
+- 2026-10-15：ConfigManager 拆为手写 Scripts/Logic/Config/ConfigManager.cs 与生成 Scripts/Gen/Config/ConfigManager.Generated.cs；使用 sealed partial class 和 LoadGenerated 分部方法，导表只更新加载清单，保留手写入口及扩展逻辑。
+
+- 2026-10-15：ConfigManager.LoadAll 改为无参，自动从运行目录/工作目录向上定位仓库根目录；内部传给生成加载清单，不要求业务调用方提供路径。仓库外临时 C# 运行测试通过切换到 client 子目录验证自动定位，独立发布目录布局尚未定义。
+
+- 2026-10-15：无参加载入口简化为客户端 Application.dataPath（按当前 Assets/client/仓库层级计算），服务端 AppContext.BaseDirectory；删除目录搜索。server.csproj 配置 .bytes 复制到构建及发布目录的 server/Res/Config。39 项 C# 检查通过，其中 Unity 路径接口为测试替身；服务端构建通过，Unity 实际运行及客户端发布布局仍待验证。
+
+- 2026-10-15：完成资源单例及 Editor 主线程同步/异步后端，新增本地脚本包接入；18 项导表测试（含 meta 保留）、39 项配置读取和 16 项资源契约检查通过，Editor/Player 宏分支编译验证通过。真实 Unity 程序集兼容编译通过，Editor 自动导入与画面验证待完成。公共单格 Unit Prefab 可用于替换 SpriteRenderer 外观，尚未创建或登记 Prefab。
+
+- 2026-10-15：创建 Unit.prefab 并登记 ID unit，公共单格 SpriteRenderer 与 1×1 碰撞体；MapRoot/Units 已清空。脚本移到 Assets/Scripts，去除包接入及 asmdef，额外测试源文件按用户要求移除。133 行配置实际导出，Unity 内实际导入与交互验证待完成。
+
+- 2026-10-15：双端新增 Shared/Singleton<T> 基类，ConfigManager 移到 Logic/Config 并改为单例，ResourceManager 同样继承；配置入口为 ConfigManager.Instance.LoadAll()。生成加载清单调整为实例分部方法，保留手写扩展逻辑。服务端构建及使用真实 Unity 程序集的 netstandard2.1/C#7.3 兼容编译均通过，0 警告、0 错误；Unity 刷新和 Console 尚未验证。
 
 ## 风险与待确认
 

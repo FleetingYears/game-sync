@@ -1,0 +1,10 @@
+{
+  "format": "GSCF",
+  "version": 1,
+  "files": [
+    "ArtResourceConfig.cs",
+    "ArtResourceType.cs",
+    "ConfigBinaryReader.cs",
+    "ConfigManager.Generated.cs"
+  ]
+}

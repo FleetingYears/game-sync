@@ -1,0 +1,130 @@
+        private static readonly object _sync = new object();
+        private static Dictionary<__KEY_TYPE__, __CLASS__> _index;
+        private static IReadOnlyList<__CLASS__> _all;
+
+        /// <summary>是否已成功加载过配置。</summary>
+        public static bool IsLoaded
+        {
+            get
+            {
+                lock (_sync)
+                {
+                    return _index != null;
+                }
+            }
+        }
+
+        private static void EnsureLoaded()
+        {
+            if (_index == null)
+            {
+                throw new InvalidOperationException("配置尚未加载：__CLASS__");
+            }
+        }
+
+        /// <summary>按仓库根目录与 BytesPath 读取文件，再加载配置。</summary>
+        public static void LoadFromFile(string projectRoot)
+        {
+            if (string.IsNullOrWhiteSpace(projectRoot))
+            {
+                throw new ArgumentException("必须提供仓库根目录。", nameof(projectRoot));
+            }
+            Load(File.ReadAllBytes(Path.Combine(projectRoot, BytesPath)));
+        }
+
+        /// <summary>加载二进制；全部校验成功后替换旧配置，失败保留旧配置。</summary>
+        public static void Load(byte[] bytes)
+        {
+            using (var reader = new ConfigBinaryReader(bytes))
+            {
+__READ_HEADER__
+__EXPECT_FIELDS__
+                var rows = new __CLASS__[count];
+                var index = new Dictionary<__KEY_TYPE__, __CLASS__>(count__COMPARER__);
+                for (int i = 0; i < count; i++)
+                {
+                    var row = new __CLASS__();
+__READ_VALUES__
+__VALIDATE_VALUES__
+                    if (index.ContainsKey(row.__KEY_MEMBER__))
+                    {
+                        throw new InvalidDataException("配置存在重复 Key。");
+                    }
+                    index.Add(row.__KEY_MEMBER__, row);
+                    rows[i] = row;
+                }
+                reader.EnsureEnd();
+                var all = Array.AsReadOnly(rows);
+                lock (_sync)
+                {
+                    _index = index;
+                    _all = all;
+                }
+            }
+        }
+
+        /// <summary>按 Key 获取配置；未找到时抛出 KeyNotFoundException。</summary>
+        public static __CLASS__ Get(__KEY_TYPE__ key)
+        {
+            lock (_sync)
+            {
+                EnsureLoaded();
+                return _index[key];
+            }
+        }
+
+        /// <summary>按 Key 查询，返回是否找到；找不到时配置为 null。</summary>
+        public static bool TryGet(__KEY_TYPE__ key, out __CLASS__ config)
+        {
+            lock (_sync)
+            {
+                EnsureLoaded();
+                return _index.TryGetValue(key, out config);
+            }
+        }
+
+        /// <summary>获取全部配置的只读列表，顺序与导出的主键排序一致。</summary>
+        public static IReadOnlyList<__CLASS__> GetAll()
+        {
+            lock (_sync)
+            {
+                EnsureLoaded();
+                return _all;
+            }
+        }
+
+        /// <summary>查找首个满足条件的配置；没有匹配项时返回 null。</summary>
+        public static __CLASS__ Find(Predicate<__CLASS__> predicate)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+            var rows = GetAll();
+            foreach (var row in rows)
+            {
+                if (predicate(row))
+                {
+                    return row;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>获取全部满足条件的配置，返回只读列表。</summary>
+        public static IReadOnlyList<__CLASS__> FindAll(Predicate<__CLASS__> predicate)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+            var result = new List<__CLASS__>();
+            foreach (var row in GetAll())
+            {
+                if (predicate(row))
+                {
+                    result.Add(row);
+                }
+            }
+            return result.AsReadOnly();
+        }

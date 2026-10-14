@@ -27,6 +27,10 @@
 **/[Oo]bj/
 TestResults/
 
+# Python 工具缓存
+__pycache__/
+*.pyc
+
 # Local secrets
 .env
 .env.*

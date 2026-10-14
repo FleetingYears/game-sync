@@ -14,7 +14,7 @@
 
 - MapRoot/Dungeon：640 个 SpriteRenderer，Order 0。
 - MapRoot/Objects：40 个静态摆设 SpriteRenderer，Order 10。
-- MapRoot/Units：MapRoot 下的单位父节点，直接包含 7 个人物、7 个怪物和 3 个矿车，共 17 个 SpriteRenderer；人物/怪物保留 Order 10，矿车保留 Order 20。Units 为零位置、无旋转、单位缩放；世界坐标未改变。原 Carts 空节点已移除，单位名称仍保留原图层、坐标和图片编号。
+- MapRoot/Units：空的动态单位父节点；原官方示例中的 17 个动态单位已按用户要求移除。后续通过 Unit.prefab 生成单位，并替换 SpriteRenderer.sprite。
 - MainCamera：位置 (0, 0, -10)，正交 Size 12.5，背景接近素材深棕色。4:3 与 16:9 可容纳全图，竖屏尚未适配。
 
 原地图有 62 个带翻转/旋转标志的格子。按 [Tiled 官方 GID 规则](https://doc.mapeditor.org/en/stable/reference/global-tile-ids/) 清除高四位标志，减去 firstgid=1 得到图片编号，再按对角、水平、垂直顺序处理变换。Unity 的旋转与 SpriteRenderer FlipX/FlipY 组合逐格校验为同一变换。
@@ -25,8 +25,8 @@
 
 ## 当前边界与验证
 
-人物、怪物和矿车均为官方示例中的静态图片，没有控制、动画、移动、射击、生命值或网络逻辑。原地图未提供碰撞属性，本次不自行猜测阻挡，也未增加出生点；后续玩法阶段单独定义。
+原官方示例中人物、怪物和矿车曾作为静态图片；当前已清空 Units，尚未实现动态生成，没有控制、动画、移动、射击、生命值或网络逻辑。原地图未提供碰撞属性，本次不自行猜测阻挡，也未增加出生点；后续玩法阶段单独定义。
 
-已核对 697 个非空格、三层计数、翻转/旋转规则、场景 fileID 和资源引用，并检查按原图拼接的离线预览。离线预览不是 Unity 截图；Unity 导入、Console 和 Game 画面尚未实际验证。需在已打开的 Unity 中打开 GameMain 确认，不启动第二个实例。
+导入时核对 697 个非空格；移除 Units 后保留 680 个静态 SpriteRenderer，当前仅有 Dungeon/Objects 静态层、翻转/旋转规则、场景 fileID 和资源引用，并检查按原图拼接的离线预览。离线预览不是 Unity 截图；Unity 导入、Console 和 Game 画面尚未实际验证。需在已打开的 Unity 中打开 GameMain 确认，不启动第二个实例。
 
 CC0 授权保留于 `client/Assets/Art/KenneyTinyDungeon/License.txt`。

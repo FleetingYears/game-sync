@@ -1,0 +1,7 @@
+{
+  "format": "GSCF",
+  "version": 1,
+  "files": [
+    "ConfigManager.Generated.cs"
+  ]
+}
