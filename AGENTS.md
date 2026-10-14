@@ -11,10 +11,11 @@
 
 - client/：Unity 工程。Assets 为资源和脚本，Packages 为依赖，ProjectSettings 为工程设置。
 - client/Assets/Scenes/：Unity 场景。
-- client/Assets/Scripts/：Unity 客户端代码，Logic/Resource 为资源单例，Gen/Config 为生成配置代码，Logic/Config 为手写配置入口；Editor API 放在 Assets/Editor。
+- client/Assets/Scripts/：Unity 客户端代码，Logic/Resource 为资源单例；配置和单例基类位于 shared/Runtime；Editor API 放在 Assets/Editor。
 - client/Assets/Art/KenneyTinyDungeon/Tiles/：132 张 16×16 静态像素图片，按 Environment、Props、Characters、Items、Projectiles、UI 及用途子目录分类，保留原编号文件名；并非完整角色动画。
 - client/Assets/Art/KenneyTinyDungeon/License.txt：Kenney 素材的 CC0 授权说明，随素材保留。
 - client/Assets/Editor/KenneyTinyDungeonImporter.cs：仅编辑器运行的像素导入配置。
+- shared/：双端共用的 netstandard2.1 类库，同时作为 Unity 本地源码包；server 使用 ProjectReference，client 通过 Packages 引用。Runtime 不依赖 Unity，程序集定义限制引用引擎 API。
 - server/Program.cs：服务端入口；server/server.csproj：项目配置；server/server.sln：IDE 解决方案。
 - tools/：开发工具，一个工具一个独立子目录，脚本及使用说明放在对应目录内。
 - tools/ConfigExporter/：Excel 校验、二进制与 C# 类生成工具，类型、格式和命令见该目录 README.md。
@@ -28,7 +29,7 @@
 - 新增或修改的代码注释一律使用中文，包括行注释、块注释和 XML 文档注释；第三方原始资源及授权文本保持原样。
 - C# public 成员使用大驼峰（PascalCase）；优先通过 using 使用简洁类型名，非必要不使用类型全名或嵌套类。配置字典和列表直接作为配置类成员，不额外引入数据容器。
 
-- 普通管理器单例继承 Shared/Singleton<T>，派生类使用私有无参构造；通过 Instance 获取，手写 ConfigManager 和 ResourceManager 放在 Logic 对应子目录。
+- 普通管理器单例继承 shared/Runtime/Singleton<T>，派生类使用私有无参构造，通过 Instance 获取；共享 ConfigManager 放在 shared/Runtime/Config，客户端 ResourceManager 放在 Assets/Scripts/Logic/Resource。
 
 ## 修改约定
 
@@ -49,7 +50,8 @@
 - 源表使用普通单元格，不添加装饰样式、Excel Table、筛选或冻结；数据页禁止公式和合并单元格。字符串标识符须按文本存储，保留前导零。
 - art_resource 的 id 为字符串稳定键，asset_path 使用 Assets/ 开头、/ 分隔的无后缀路径；type 填写 ArtResourceType 枚举名称 Sprite/Prefab，枚举固定值分别为 1/2。
 - 导表路径相对仓库根目录，不能写死开发机目录。输出目录仅存工具管理文件，保留 .config-exporter.json 管理标记，不手动放入其他文件。
-- C# 配置类生成到 client/Assets/Scripts/Gen/Config 和 server/Scripts/Gen/Config，文件由导表工具维护，不手改；生成的 public 成员一律使用大驼峰（PascalCase），例如 asset_path → AssetPath；Excel 与二进制仍保留原字段名，枚举使用固定值。配置记录属性为 public/private set，双端通过手写 ConfigManager.Instance.LoadAll() 显式加载本端所有配置，手写文件在各自 Scripts/Logic/Config，不由导表覆盖；加载清单位于 Gen/Config/ConfigManager.Generated.cs，通过 partial 方法自动维护；单表可使用 Load/LoadFromFile，加载后通过 Get/TryGet、GetAll、Find/FindAll 查询；加载失败必须保留旧配置。每个配置类含 BytesPath 常量，指向对应端的 .bytes，路径相对仓库根目录；客户端路径位于 Assets/Scripts，由 Unity 默认程序集编译；导表须保留生成脚本原有 .meta 与 GUID。
+- C# 配置生成到 shared/Runtime/Gen/Client 和 shared/Runtime/Gen/Server，通过 Unity 宏选择本端代码；Shared 源表分别进入两端清单。生成 public 成员使用 PascalCase，Excel/二进制保留原字段名；不手改生成文件，保留 .meta/GUID。
+- shared/Runtime/Config/ConfigManager.cs 为手写共享入口，不由导表覆盖；ConfigManager.Instance.LoadAll() 调用本端自动生成的分部加载清单。服务端默认使用 AppContext.BaseDirectory，客户端 Editor 平台桥接注册根目录获取函数。单表提供 Load/LoadFromFile、Get/TryGet、GetAll、Find/FindAll，加载失败保留旧数据；BytesPath 保持对应端的仓库相对路径。
 - 二进制 GSCF 的版本、编码与字段布局以 tools/ConfigExporter/README.md 为准；修改协议须明确兼容关系与验证，不将表现用 float/double 配置当作确定性数学方案。
 
 ## 2D 坐标与地图约定

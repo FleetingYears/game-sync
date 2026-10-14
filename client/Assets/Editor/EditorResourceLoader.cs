@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
 using System;
+using System.IO;
+using GameSync.Config;
 using System.Threading.Tasks;
 using GameSync.Resource;
 using UnityEditor;
@@ -10,6 +12,7 @@ public static class EditorResourceLoader
     [InitializeOnLoadMethod]
     private static void Register()
     {
+        ConfigManager.Instance.SetRootProvider(() => Path.GetDirectoryName(Path.GetDirectoryName(UnityEngine.Application.dataPath)));
         ResourceManager.Instance.SetEditorLoaders(Load, LoadAsync);
     }
 

@@ -19,7 +19,7 @@ tools/ConfigExporter/export.cmd --check
 - Client 表 → `client/Res/Config/<工作表名>.bytes`。
 - Server 表 → `server/Res/Config/<工作表名>.bytes`。
 - Shared 表 → 两端各一份，内容相同。
-- 客户端 C# → `client/Assets/Scripts/Gen/Config/`；服务端 C# → `server/Scripts/Gen/Config/`，按 Client/Server/Shared 范围分发。
+- 客户端 C# → `shared/Runtime/Gen/Client/`；服务端 C# → `shared/Runtime/Gen/Server/`，按 Client/Server/Shared 范围分发。
 - 枚举定义：`tools/ConfigExporter/enums.json`。此 JSON 只定义工具的枚举，不是导出的配置数据。
 
 目录不存在时按实际导出需要创建。Client 与 Server 可以有同名表，Shared 不得与任何一端同名；同一端不得有重复表名，大小写不同也视为输出文件名冲突。默认枚举 `ArtResourceType` 固定为 `Sprite=1`、`Prefab=2`。
@@ -67,15 +67,17 @@ tools/ConfigExporter/export.cmd --check
 
 标量类型与 Excel 对应，数组使用 T[]。每端只生成实际引用的枚举，同一枚举仅一份，固定值来自 enums.json。共享表字段结构和枚举值在两端相同；配置类新增 public const string BytesPath，按对应端输出实际相对路径，例如 client/Res/Config/art_resource.bytes。服务端路径相应为 server/Res/Config，允许覆盖输出参数，但不能跨盘生成不可表达的相对路径。BytesPath、Load、LoadFromFile、Get、TryGet、GetAll、Find、FindAll、IsLoaded、EnsureLoaded、ConfigBinaryReader 为保留成员名，字段转为大驼峰后不得重名。字段与枚举成员均转为 PascalCase，转换后重名会拒绝生成。普通枚举使用简短类型名，仅被同名成员遮蔽时使用 global:: 全局限定。类型/文件名禁止冲突，字段不能与所在类同名，枚举成员不能与枚举类型同名。
 
-生成文件使用 UTF-8、LF，无时间戳或机器路径，使用 C# 7.3 可用语法和 System 基础类型，不依赖 Unity API。不将实际配置行硬编码进 C#；生成类包含加载、字典索引及查询逻辑，每端按需要生成一份 ConfigBinaryReader.cs，并生成 ConfigManager.Generated.cs 加载清单；生成文件不手改。
+生成文件使用 UTF-8、LF，无时间戳或机器路径，使用 C# 7.3 可用语法和 System 基础类型，不依赖 Unity API。不将实际配置行硬编码进 C#；生成类包含加载、字典索引及查询逻辑，共用 shared/Runtime/Config/ConfigBinaryReader.cs 解码器，并生成 ConfigManager.Generated.cs 加载清单；生成文件不手改。
 
-客户端生成到 Assets/Scripts/Gen/Config，由 Unity 默认程序集编译；不配置本地包和 asmdef，实际刷新验证仍待完成。服务端生成目录位于项目内，SDK 默认规则会编译实际生成的 .cs。
+客户端生成到 shared/Runtime/Gen/Client，服务端生成到 shared/Runtime/Gen/Server。生成文件分别由 UNITY_5_3_OR_NEWER 与其反向条件包裹，Unity 只编译客户端配置，普通 .NET 工程只编译服务端配置；同名表及生成清单不会同时参与编译。共享源表分别生成到两端目录，二进制输出位置保持不变。
 
 ## 双端统一加载入口
 
-手写 ConfigManager.cs 分别位于 client/Assets/Scripts/Logic/Config 与 server/Scripts/Logic/Config，不归导表工具管理。两端生成 ConfigManager.Generated.cs，位于各自 Scripts/Gen/Config。二者属于同一 sealed partial class；手写 LoadAll 保留初始化和业务扩展位置，调用分部方法 LoadGenerated，生成部分只维护表加载调用清单。导表不会覆盖手写文件，也不会添加/删除手写逻辑。无参客户端入口使用 Unity Application.dataPath，通过 Assets 的父目录取得 client，再取父目录作为现有仓库路径基准；仅适用于当前 Unity 工程布局，构建后客户端资源布局尚未适配。服务端直接使用 AppContext.BaseDirectory；server.csproj 将 Res/Config 下的 .bytes 复制到构建/发布目录的 server/Res/Config，以保持生成 BytesPath 可用。不扫描父目录，不依赖工作目录，不写死开发机路径。调用 ConfigManager.Instance.LoadAll() 加载本端 Client/Server 及 Shared 表，清单按表名稳定排序，由导表工具随源表自动更新。当前客户端加载 ArtResourceConfig；服务端暂无表，入口目前不读取配置文件。
+手写入口位于 shared/Runtime/Config/ConfigManager.cs，继承同一工程中的 Singleton<T>，不由导表覆盖；本端 ConfigManager.Generated.cs 实现实例分部方法 LoadGenerated。调用 ConfigManager.Instance.LoadAll()，清单按表名稳定排序。
 
-入口依次加载各表，失败时抛异常并停止后续表；每张失败的表保留旧数据，但此前已加载的表不会回滚，因此不是全局多表事务。应在启动阶段成功加载后再使用配置，不依赖目录扫描或反射发现类。服务端入口已可被工程编译，但本次不改 Program.cs 的启动逻辑；客户端代码已放在 Assets/Scripts，启动流程与实际 Editor 刷新仍待验证。
+共享库不引用 Unity API。服务端默认从 AppContext.BaseDirectory 加载，server.csproj 保持 .bytes 在构建/发布目录的 server/Res/Config。客户端 Assets/Editor/EditorResourceLoader.cs 注册根目录获取函数，通过 Application.dataPath 获取当前仓库根目录；业务调用不传路径。当前客户端发布布局尚未实现。服务端入口尚未接入 Program。
+
+多表按顺序加载，失败时停止；失败表保留旧数据，已加载的其他表不回滚。客户端与服务端通过本地源码包和 ProjectReference 引用同一份 shared 工程，详见 shared/README.md。
 
 ## 加载与查询
 
@@ -102,7 +104,7 @@ var sprites = ArtResourceConfig.FindAll(c => c.Type == ArtResourceType.Sprite);
 
 配置类直接使用 _index 字典和 _all 列表成员，不使用嵌套类或额外数据容器。加载时先构建临时数组、字典和只读列表，全部校验通过后在同一把锁内替换两个成员，失败保留旧数据；按 Key 查询和获取列表也在锁内取一致数据，条件回调在锁外执行。重载后已持有的旧列表/记录引用仍表示旧快照，不会自动更新。公开属性均为 private set，Key 不能被外部修改；数组仍是约定的 T[]，不要修改数组元素，以保持配置只读使用。
 
-读取器校验 magic、版本、来源/表名、字段数/顺序/类型/标志、主键索引、枚举名称及固定值；校验字符串与数组长度、严格 UTF-8、bool 编码、有限浮点值、必填字符串、Key 空白/重复和尾部多余字节。字典的字符串比较使用 StringComparer.Ordinal。当前同步加载设计，不包含异步加载、Unity Assets 接入、美术资源实例化或热更新调度。
+读取器校验 magic、版本、来源/表名、字段数/顺序/类型/标志、主键索引、枚举名称及固定值；校验字符串与数组长度、严格 UTF-8、bool 编码、有限浮点值、必填字符串、Key 空白/重复和尾部多余字节。字典的字符串比较使用 StringComparer.Ordinal。当前同步加载设计，不包含异步配置加载、美术资源实例化或热更新调度。
 
 后续按用户要求不新增测试源代码；当前验证使用构建、静态文件检查和实际 Editor 验证。先前新增的测试源文件已移除。
 
@@ -143,3 +145,5 @@ int 主键按有符号数值升序，string 主键按 UTF-16 序数升序，与�
 项目 `art_resource.xlsx` 的 132 条 Sprite 配置已实际导出为客户端 `.bytes` 并独立解码核对；项目目前无 Server/Shared 源表，服务端输出目录只有管理标记。新增 C# 类型/文件名冲突、XML 注释转义及两端代码分发测试；实际配置类与覆盖全部标量/数组的夹具以 C# 7.3 编译通过（0 警告、0 错误），服务端 dotnet build 通过。编译因沙箱外 NuGet 用户配置读取权限失败后，通过授权的构建命令完成。新增临时 C# 7.3 运行测试，39 项检查通过：实际 art_resource 文件加载、全部标量/数组、两种 Key 查询、条件查询、只读属性/列表、重载及版本/magic/截断/重复 Key/非法 UTF-8/bool/枚举/长度的失败保护。未执行 Unity 导入或跨平台读取。
 
 2026-10-15：源表新增 Unit Prefab，当前 133 条配置已实际导出；客户端脚本放在 Assets/Scripts，ConfigManager 和 ResourceManager 继承 Singleton<T>。服务端构建与真实 Unity 程序集兼容编译均为 0 警告、0 错误；Unity 导入、Console 和实际资源读取尚未验证。
+
+ConfigBinaryReader 位于 shared/Runtime/Config，由双端共用，不由导表工具生成或覆盖；工具模板目录只保留表结构相关模板。

@@ -8,7 +8,7 @@
 
 ## 当前进度
 
-客户端美术资源源表 config/Excels/Client/art_resource.xlsx 已按四行表头整理，字符串 ID、Sprite/Prefab 枚举、无后缀资源路径，普通单元格，共 133 条（132 个 Sprite、1 个 Unit Prefab）。tools/ConfigExporter/export.cmd 已实际生成 client/Res/Config/art_resource.bytes；C# 数据类已生成至 client/Assets/Scripts/Gen/Config；配置按 Key 加载/查询已实现；Editor 资源加载已实现（默认异步、支持同步）；Player 加载未实现。
+客户端美术资源源表 config/Excels/Client/art_resource.xlsx 已按四行表头整理，字符串 ID、Sprite/Prefab 枚举、无后缀资源路径，普通单元格，共 133 条（132 个 Sprite、1 个 Unit Prefab）。tools/ConfigExporter/export.cmd 已实际生成 client/Res/Config/art_resource.bytes；C# 数据类已生成至 shared/Runtime/Gen/Client；配置按 Key 加载/查询已实现；Editor 资源加载已实现（默认异步、支持同步）；Player 加载未实现。
 
 132 张静态素材已按用途分类，导入脚本支持递归扫描；新增由 Kenney 官方 Tiled 示例转换的 GameMain 地牢场景，没有玩法实现。场景布局与使用方式见 [地牢场景说明](SCENE.md)。
 
@@ -86,6 +86,8 @@ Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相
 
 - 2026-10-15：双端新增 Shared/Singleton<T> 基类，ConfigManager 移到 Logic/Config 并改为单例，ResourceManager 同样继承；配置入口为 ConfigManager.Instance.LoadAll()。生成加载清单调整为实例分部方法，保留手写扩展逻辑。服务端构建及使用真实 Unity 程序集的 netstandard2.1/C#7.3 兼容编译均通过，0 警告、0 错误；Unity 刷新和 Console 尚未验证。
 
+- 2026-10-15：重构到与 client/server 同级的 shared 工程（netstandard2.1、C#7.3）。单例、ConfigManager 和两端生成配置均位于 shared/Runtime；server 使用 ProjectReference，Unity 使用 file:../../shared 本地源码包及 GameSync.Shared.asmdef（禁止引擎引用）。导表默认输出 shared/Runtime/Gen/Client、Server，按 Unity 宏隔离；Editor 平台桥接注册配置根目录获取函数。服务端及真实 Unity 程序集兼容编译均通过，0 警告、0 错误；Unity 包刷新与 Console 尚未验证。
+
 ## 风险与待确认
 
 素材均为静态图片，不是完整角色动画；目前没有通用圆形子弹资源。后续根据玩法需要补充。
@@ -93,3 +95,5 @@ Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相
 ## 维护
 
 每完成一部分功能，在提交前核对本文件、根目录 AGENTS.md 和 PROJECT_STATUS.md，更新勾选状态、验证记录与过时描述。
+
+- 2026-10-15：ConfigBinaryReader 移至 shared/Runtime/Config，保留原 .meta/GUID，双端共用；移除导表中的解码器生成及模板副本。重新导出 133 条配置，服务端与 Unity 兼容编译通过。

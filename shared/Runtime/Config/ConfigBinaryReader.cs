@@ -1,4 +1,3 @@
-// 此文件由导表工具复制生成，请勿在生成目录手动修改。
 using System;
 using System.IO;
 using System.Text;

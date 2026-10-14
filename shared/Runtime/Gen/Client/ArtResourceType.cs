@@ -1,3 +1,4 @@
+#if UNITY_5_3_OR_NEWER
 // 此文件由导表工具自动生成，请勿手动修改。
 using System;
 using System.Collections.Generic;
@@ -11,3 +12,5 @@ namespace GameSync.Config
         Sprite = 1,
     }
 }
+
+#endif

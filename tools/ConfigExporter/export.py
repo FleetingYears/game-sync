@@ -435,8 +435,6 @@ def generate_csharp(tables: list[Table], enums: dict, bytes_directory="client/Re
         lines.append(generate_runtime(table, name, enums, member_names))
         lines.append("    }\n}\n")
         generated[name + ".cs"] = "".join(lines).encode("utf-8")
-    if tables:
-        generated["ConfigBinaryReader.cs"] = (Path(__file__).with_name("templates") / "ConfigBinaryReader.cs").read_bytes()
     for name in used_enums:
         lines = [header, f"    public enum {name} : int\n    {{\n"]
         lines.extend(f"        {pascal_name(member)} = {value},\n" for member, value in sorted(enums[name].items()))
@@ -590,6 +588,9 @@ def run(source: Path, client_output: Path, server_output: Path, enums_file: Path
         except ValueError as exc:
             raise ConfigError("C# 配置路径无法相对仓库根目录表示，请勿跨盘输出") from exc
         code = generate_csharp(selected, enums, bytes_directory)
+        # Unity 与 .NET 分别编译本端配置，避免同名表和加载清单冲突。
+        condition = "UNITY_5_3_OR_NEWER" if scope == "Client" else "!UNITY_5_3_OR_NEWER"
+        code = {name: ("#if " + condition + "\n").encode() + content + b"\n#endif\n" for name, content in code.items()}
         if output is not None:
             outputs[output.resolve()] = code
     if not check:
@@ -603,8 +604,8 @@ def main():
     parser.add_argument("--source-root", type=Path, default=Path("config/Excels"))
     parser.add_argument("--client-output", type=Path, default=Path("client/Res/Config"))
     parser.add_argument("--server-output", type=Path, default=Path("server/Res/Config"))
-    parser.add_argument("--client-code", type=Path, default=Path("client/Assets/Scripts/Gen/Config"))
-    parser.add_argument("--server-code", type=Path, default=Path("server/Scripts/Gen/Config"))
+    parser.add_argument("--client-code", type=Path, default=Path("shared/Runtime/Gen/Client"))
+    parser.add_argument("--server-code", type=Path, default=Path("shared/Runtime/Gen/Server"))
     parser.add_argument("--enums", type=Path, default=Path("tools/ConfigExporter/enums.json"))
     parser.add_argument("--check", action="store_true", help="仅校验，不写入文件")
     args = parser.parse_args()

@@ -1,0 +1,6 @@
+{
+  "name": "GameSync.Shared",
+  "rootNamespace": "GameSync",
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

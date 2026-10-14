@@ -51,6 +51,8 @@
 
 - 2026-10-15：双端新增 Shared/Singleton<T> 基类，ConfigManager 移到 Logic/Config 并改为单例，ResourceManager 同样继承；配置入口为 ConfigManager.Instance.LoadAll()。生成加载清单调整为实例分部方法，保留手写扩展逻辑。服务端构建及使用真实 Unity 程序集的 netstandard2.1/C#7.3 兼容编译通过，均为 0 警告、0 错误；Unity 编辑器刷新与 Console 尚未验证。
 
+- 2026-10-15：重构到与 client/server 同级的 shared 工程（netstandard2.1、C#7.3）。单例、ConfigManager 和两端生成配置均位于 shared/Runtime；server 使用 ProjectReference，Unity 使用 file:../../shared 本地源码包及 GameSync.Shared.asmdef（禁止引擎引用）。导表默认输出 shared/Runtime/Gen/Client、Server，按 Unity 宏隔离；Editor 平台桥接注册配置根目录获取函数。服务端及真实 Unity 程序集兼容编译均通过，0 警告、0 错误；Unity 包刷新与 Console 尚未验证。
+
 ## 当前状态与限制
 
 - 在 feat_common_config_exporter 建立客户端源表 config/Excels/Client/art_resource.xlsx，普通单元格、四行表头；字段 id（string）、type（enum:ArtResourceType）、asset_path（无后缀）、remark，录入 132 个 Sprite。ID 保留文本，枚举填写 Sprite/Prefab，固定值 1/2；说明页为 _说明。
@@ -90,3 +92,5 @@
 - 完成一项功能或修改技术版本后更新此文件，只记录已经发生的事实。
 - 验证结果应注明执行方式及结果，未执行的检查不能记为通过。
 - 计划可以随学习进展调整；不要把计划写成已实现能力。
+
+- 2026-10-15：ConfigBinaryReader 移至 shared/Runtime/Config，保留原 .meta/GUID，双端共用；移除导表中的解码器生成及模板副本。重新导出 133 条配置，服务端与 Unity 兼容编译通过。
