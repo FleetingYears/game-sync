@@ -15,6 +15,8 @@
 - client/Assets/Art/KenneyTinyDungeon/License.txt：Kenney 素材的 CC0 授权说明，随素材保留。
 - client/Assets/Editor/KenneyTinyDungeonImporter.cs：仅编辑器运行的像素导入配置。
 - server/Program.cs：服务端入口；server/server.csproj：项目配置；server/server.sln：IDE 解决方案。
+- tools/：开发工具，一个工具一个独立子目录，脚本及使用说明放在对应目录内。
+- config/Excels/{Client,Server,Shared}/：分别用于客户端、服务端及共享的 Excel 配置源文件，按实际需求添加文件。
 - 共享协议和确定性模拟代码应独立于 Unity 表现层，具体目录以项目进度文件为准。
 
 ## 语言约定
