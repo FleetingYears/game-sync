@@ -50,7 +50,7 @@
 - 源表使用普通单元格，不添加装饰样式、Excel Table、筛选或冻结；数据页禁止公式和合并单元格。字符串标识符须按文本存储，保留前导零。
 - art_resource 的 id 为字符串稳定键，asset_path 使用 Assets/ 开头、/ 分隔的无后缀路径；type 填写 ArtResourceType 枚举名称 Sprite/Prefab，枚举固定值分别为 1/2。
 - 导表路径相对仓库根目录，不能写死开发机目录。输出目录仅存工具管理文件，保留 .config-exporter.json 管理标记，不手动放入其他文件。
-- C# 配置生成到 shared/Runtime/Gen/Client 和 shared/Runtime/Gen/Server，通过 Unity 宏选择本端代码；Shared 源表分别进入两端清单。生成 public 成员使用 PascalCase，Excel/二进制保留原字段名；不手改生成文件，保留 .meta/GUID。
+- C# 配置生成到 shared/Runtime/Gen/Client/Config 和 shared/Runtime/Gen/Server/Config，通过 Unity 宏选择本端代码；Shared 源表分别进入两端清单。生成 public 成员使用 PascalCase，Excel/二进制保留原字段名；不手改生成文件，保留 .meta/GUID。
 - shared/Runtime/Config/ConfigManager.cs 为手写共享入口，不由导表覆盖；ConfigManager.Instance.LoadAll() 调用本端自动生成的分部加载清单。服务端默认使用 AppContext.BaseDirectory，客户端 Editor 平台桥接注册根目录获取函数。单表提供 Load/LoadFromFile、Get/TryGet、GetAll、Find/FindAll，加载失败保留旧数据；BytesPath 保持对应端的仓库相对路径。
 - 二进制 GSCF 的版本、编码与字段布局以 tools/ConfigExporter/README.md 为准；修改协议须明确兼容关系与验证，不将表现用 float/double 配置当作确定性数学方案。
 

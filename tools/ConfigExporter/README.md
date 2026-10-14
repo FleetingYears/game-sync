@@ -19,7 +19,7 @@ tools/ConfigExporter/export.cmd --check
 - Client 表 → `client/Res/Config/<工作表名>.bytes`。
 - Server 表 → `server/Res/Config/<工作表名>.bytes`。
 - Shared 表 → 两端各一份，内容相同。
-- 客户端 C# → `shared/Runtime/Gen/Client/`；服务端 C# → `shared/Runtime/Gen/Server/`，按 Client/Server/Shared 范围分发。
+- 客户端 C# → `shared/Runtime/Gen/Client/Config/`；服务端 C# → `shared/Runtime/Gen/Server/Config/`，按 Client/Server/Shared 范围分发。
 - 枚举定义：`tools/ConfigExporter/enums.json`。此 JSON 只定义工具的枚举，不是导出的配置数据。
 
 目录不存在时按实际导出需要创建。Client 与 Server 可以有同名表，Shared 不得与任何一端同名；同一端不得有重复表名，大小写不同也视为输出文件名冲突。默认枚举 `ArtResourceType` 固定为 `Sprite=1`、`Prefab=2`。
@@ -69,7 +69,7 @@ tools/ConfigExporter/export.cmd --check
 
 生成文件使用 UTF-8、LF，无时间戳或机器路径，使用 C# 7.3 可用语法和 System 基础类型，不依赖 Unity API。不将实际配置行硬编码进 C#；生成类包含加载、字典索引及查询逻辑，共用 shared/Runtime/Config/ConfigBinaryReader.cs 解码器，并生成 ConfigManager.Generated.cs 加载清单；生成文件不手改。
 
-客户端生成到 shared/Runtime/Gen/Client，服务端生成到 shared/Runtime/Gen/Server。生成文件分别由 UNITY_5_3_OR_NEWER 与其反向条件包裹，Unity 只编译客户端配置，普通 .NET 工程只编译服务端配置；同名表及生成清单不会同时参与编译。共享源表分别生成到两端目录，二进制输出位置保持不变。
+客户端生成到 shared/Runtime/Gen/Client/Config，服务端生成到 shared/Runtime/Gen/Server/Config。生成文件分别由 UNITY_5_3_OR_NEWER 与其反向条件包裹，Unity 只编译客户端配置，普通 .NET 工程只编译服务端配置；同名表及生成清单不会同时参与编译。共享源表分别生成到两端目录，二进制输出位置保持不变。
 
 ## 双端统一加载入口
 
