@@ -1,6 +1,6 @@
 # 项目进度
 
-最后更新：2026-10-14。长期开发约定见 AGENTS.md。
+最后更新：2026-10-15。长期开发约定见 AGENTS.md。
 
 ## 已完成
 
@@ -8,7 +8,7 @@
 - 创建公开 GitHub 仓库：https://github.com/FleetingYears/game-sync，主分支为 main。
 - 已从 main 创建 dev_state_sync 和 dev_frame_sync，本地分支均跟踪对应 GitHub 分支；分支开发与合并规则见 AGENTS.md。
 - 配置 Unity/.NET 忽略规则，保留源码、必要资源和 .meta，排除缓存与编译产物。
-- 建立 Unity 工程，当前版本为 2022.3.62f1c1；场景目前为默认 SampleScene。
+- 建立 Unity 工程，当前版本为 2022.3.62f1c1；当前使用由 Kenney 官方 Tiled 示例转换的 GameMain 地牢场景；默认 SampleScene 已移除。
 - 建立 C# 控制台服务端，目前仅输出 Hello, World!。
 - 完成计划第 1 步：安装 .NET SDK 10.0.402，将服务端升级到 net10.0；构建与运行验证通过。
 - 添加根目录 Rider 运行配置 .run/Server.run.xml（启动服务端），通过 scripts/run-server.cmd 调用 dotnet run；适用于 Windows，需安装 .NET 10 SDK 和启用 Rider Shell Script 插件。脚本实际运行输出 Hello, World!、退出码 0；配置 XML 可解析，Rider 内识别和点击运行尚未验证。
@@ -20,15 +20,20 @@
 
 - 安装 2D Sprite 1.0.0，启用 Sprite Atlas V2，创建 client/Assets/Art/Atlases/KenneyTinyDungeon.spriteatlasv2，引用整个 Tiles 目录；图集设置为 Point、无压缩、关闭 Mip Maps/旋转/紧密打包、Padding 4、Include in Build。用户已在 Unity 生成图集预览；最终设置通过文件核对，未实际检查 Console 或执行场景/构建。
 
+- 2026-10-15 核对用户重命名后的场景：GameMain、MapRoot、MainCamera，原三层共 697 个 SpriteRenderer 保持，后续调整为 MapRoot/Dungeon（640）、MapRoot/Objects（40）和 MapRoot/Units（17）；Build Settings 指向 GameMain 且 GUID 与场景 .meta 一致。已将 XY 平面、地图中心原点、半格中心、Tiled 映射与世界单位约定写入 AGENTS.md；静态核对未代替 Unity 运行验证。
+
+- 2026-10-15：修复 Units 新节点 ID 超出有符号 64 位范围及 SceneRoots 遗漏 Units 引用的问题；改用 9000/9001，检查 ID 范围与唯一性、根节点列表、父子引用、17 个单位和 697 个 SpriteRenderer 均通过。先前静态检查未覆盖 ID 范围与 SceneRoots，不代表 Unity 导入通过；修复后仍需在 Unity 重新打开场景确认。
+
 ## 当前状态与限制
 
+- 在 feat_common_dungeon_scene 将仓库外 Kenney Tiny Dungeon 的官方 Tiled sampleMap.tmx 转为 Assets/Scenes/GameMain.unity，并加入 Build Settings。保留原始 32×20 格布局、Dungeon/Objects/Carts 三层、697 个非空格与 62 个翻转/旋转格，复用现有 Sprite/GUID 与图集；仅配置正交相机，不自建大厅、不改原配色、不增加碰撞或出生点。后续按用户要求将人物、怪物和矿车共 17 个单位归入 MapRoot/Units 父节点，地图静态节点保留 Dungeon 与 Objects。已核对转换后的引用和格子变换并检查离线拼接预览，Unity 导入、Console 和运行画面尚待验证；由 feat_common_dungeon_scene 功能分支维护。
 - server/server.csproj 的目标框架为 net10.0；本机 SDK 为 10.0.402，Microsoft.NETCore.App 运行时为 10.0.13，原 SDK 9.0.300 仍保留。
 - 本机 Rider 为 2026.2.3.1；已核对官方 .NET 10 支持说明，尚未在 Rider 内实际构建或调试。
 - 尚未实现网络连接、消息协议、房间管理、固定 Tick、移动战斗、状态同步、帧同步、预测、校正或回滚。
 - 尚未建立共享协议/模拟类库或确定性数学库。
 - 已明确公共、状态同步与帧同步三条功能分支流；Shared/StateSync/FrameSync 的代码目录和程序集隔离尚未实施，具体约定见 AGENTS.md。
 - 尚无数学、协议或模拟自动化测试；同步工具已在临时 Git 仓库执行集成场景验证，未验证联网游戏运行和跨平台确定性。
-- 素材与导入设置已发布到远程 main，文件树与本地一致；提交为 e52f56a。项目说明与子计划文档随独立提交维护。
+- 素材分类、导入设置与 Sprite Atlas 已合入并推送到远程 main，提交为 d909128；当前功能分支另有本地地牢场景改动。
 
 ## 后续计划
 

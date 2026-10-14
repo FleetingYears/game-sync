@@ -1,0 +1,32 @@
+# Kenney 官方示例地牢
+
+场景：`client/Assets/Scenes/GameMain.unity`。在 Unity Project 中双击打开，然后切换到 Game 查看；场景已加入 Build Settings，原 SampleScene 已移除。
+
+## 来源与转换
+
+使用仓库外素材包 `F:/Workspace/UnityProjects/art/Kenney-Tiny-Dungeon/Tiled/sampleMap.tmx` 的官方布局。原包没有 Unity 场景，因此将 Tiled 的图层与格子转换为 Unity GameObject/SpriteRenderer，复用项目内现有 Sprite 与 Sprite Atlas；未导入重复图集、Tiled 原文件或预览说明。
+
+地图为 32×20 格，一格对应一个世界单位，Scale 均为 1。地图中心移到世界原点：列 c、行 r 的中心坐标为 (c-15.5, 9.5-r)。保留原图配色，SpriteRenderer 为白色。
+
+原 TMX 的 SHA-256：`fc545787837e2655c9d2078cc1b167df0d9ea2755f6ec3912c7987e8501339e3`。
+
+## 层级与相机
+
+- MapRoot/Dungeon：640 个 SpriteRenderer，Order 0。
+- MapRoot/Objects：40 个静态摆设 SpriteRenderer，Order 10。
+- MapRoot/Units：MapRoot 下的单位父节点，直接包含 7 个人物、7 个怪物和 3 个矿车，共 17 个 SpriteRenderer；人物/怪物保留 Order 10，矿车保留 Order 20。Units 为零位置、无旋转、单位缩放；世界坐标未改变。原 Carts 空节点已移除，单位名称仍保留原图层、坐标和图片编号。
+- MainCamera：位置 (0, 0, -10)，正交 Size 12.5，背景接近素材深棕色。4:3 与 16:9 可容纳全图，竖屏尚未适配。
+
+原地图有 62 个带翻转/旋转标志的格子。按 [Tiled 官方 GID 规则](https://doc.mapeditor.org/en/stable/reference/global-tile-ids/) 清除高四位标志，减去 firstgid=1 得到图片编号，再按对角、水平、垂直顺序处理变换。Unity 的旋转与 SpriteRenderer FlipX/FlipY 组合逐格校验为同一变换。
+
+## 坐标约定
+
+玩法平面为 XY，+X 向右、+Y 向上，图块 Z=0；MapRoot、静态图层与 Units 均为零位置、无旋转、单位缩放，图块局部坐标等于世界坐标。32×20 格的中心范围为 x=-15.5..15.5、y=-9.5..9.5，地图外边界为 x=±16、y=±10。原点在中央四格交点，格子中心为半整数。相机位于负 Z 侧朝 +Z 查看。长期规则见根目录 AGENTS.md 的“2D 坐标与地图约定”。
+
+## 当前边界与验证
+
+人物、怪物和矿车均为官方示例中的静态图片，没有控制、动画、移动、射击、生命值或网络逻辑。原地图未提供碰撞属性，本次不自行猜测阻挡，也未增加出生点；后续玩法阶段单独定义。
+
+已核对 697 个非空格、三层计数、翻转/旋转规则、场景 fileID 和资源引用，并检查按原图拼接的离线预览。离线预览不是 Unity 截图；Unity 导入、Console 和 Game 画面尚未实际验证。需在已打开的 Unity 中打开 GameMain 确认，不启动第二个实例。
+
+CC0 授权保留于 `client/Assets/Art/KenneyTinyDungeon/License.txt`。
