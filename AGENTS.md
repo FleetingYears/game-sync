@@ -49,6 +49,28 @@
 - AGENTS.md 记录长期约定，PROJECT_STATUS.md 记录当前状态、验证结果与计划；实现变化不能只更新代码而留下误导后续开发的文档。
 - 不将未实现、未验证或尚在进行的工作写为已完成；无法确认的事项明确标注。
 
+## 分支用途与合并约束
+
+- main：公共基础与项目统一约定，包括素材、基础玩法、共享协议及可复用数学代码；不集成具体同步方案的专属实现。
+- dev_state_sync：状态同步方案及其专属实现。
+- dev_frame_sync：帧同步方案及其专属实现。
+- 每次开发一个功能模块前，新建 feat_ 开头的独立功能分支，不直接在 main 或 dev_* 分支实现功能。
+- 公共功能：从 main 创建 feat_common_*，完成并验证后合回 main，例如 feat_common_protocol。
+- 状态同步功能：从 dev_state_sync 创建 feat_state_*，完成并验证后只合回 dev_state_sync，例如 feat_state_movement。
+- 帧同步功能：从 dev_frame_sync 创建 feat_frame_*，完成并验证后只合回 dev_frame_sync，例如 feat_frame_input。
+- 公共更新允许 main → dev_state_sync / dev_frame_sync；开发分支允许向自己创建的功能分支同步更新，main 也可向 feat_common_* 同步更新。
+- 禁止 dev_state_sync 与 dev_frame_sync 相互合并，禁止两个 dev_* 整支合回 main。
+- 方案专属 feat_* 不得合入另一方案或 main，其他功能分支不得直接相互合并；完成后统一合回所属主线。
+- 从方案中提取公共代码时，从 main 新建 feat_common_*，单独整理、验证后合入 main；不能用整支合并或直接 cherry-pick 混入方案专属代码。
+- 不使用 rebase、cherry-pick 或补丁复制绕过上述隔离限制；允许的合并关系不等于自动发布授权，实际推送仍遵守用户指令。
+
+## 代码结构与依赖隔离
+
+- 客户端和服务端的代码分别区分 Shared、StateSync、FrameSync：Shared 为公共协议、模拟基础和可复用代码，后两者为方案专属实现。
+- 代码目录建立时，Unity 运行时代码可使用 client/Assets/Scripts/{Shared,StateSync,FrameSync}/，服务端可使用 server/{Shared,StateSync,FrameSync}/；共享类库独立时保持同样的依赖方向，Editor 脚本仍放在 Assets/Editor。
+- StateSync 与 FrameSync 可以依赖 Shared，但不能相互依赖；Shared 不能反向依赖具体同步方案。
+- 不为记录约定提前创建空目录或占位实现，按实际功能需要建立目录或程序集边界。
+
 ## Git 与公开发布
 
 - 远程仓库：https://github.com/FleetingYears/game-sync，为公开仓库，主要分支为 main。

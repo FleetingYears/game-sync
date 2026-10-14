@@ -6,6 +6,7 @@
 
 - 建立统一 Git 仓库，客户端 client/ 与服务端 server/ 共用仓库。
 - 创建公开 GitHub 仓库：https://github.com/FleetingYears/game-sync，主分支为 main。
+- 已从 main 创建 dev_state_sync 和 dev_frame_sync，本地分支均跟踪对应 GitHub 分支；分支开发与合并规则见 AGENTS.md。
 - 配置 Unity/.NET 忽略规则，保留源码、必要资源和 .meta，排除缓存与编译产物。
 - 建立 Unity 工程，当前版本为 2022.3.62f1c1；场景目前为默认 SampleScene。
 - 建立 C# 控制台服务端，目前仅输出 Hello, World!。
@@ -18,6 +19,7 @@
 - server/server.csproj 的实际目标仍为 net9.0。已讨论推荐 .NET 10，但未修改项目配置，也未验证 .NET 10 SDK 是否安装。
 - 尚未实现网络连接、消息协议、房间管理、固定 Tick、移动战斗、状态同步、帧同步、预测、校正或回滚。
 - 尚未建立共享协议/模拟类库或确定性数学库。
+- 已明确公共、状态同步与帧同步三条功能分支流；Shared/StateSync/FrameSync 的代码目录和程序集隔离尚未实施，具体约定见 AGENTS.md。
 - 尚无项目自建自动化测试，也未验证联网运行和跨平台确定性。
 - 素材与导入设置已发布到远程 main，文件树与本地一致；提交为 e52f56a。项目说明与子计划文档随独立提交维护。
 
