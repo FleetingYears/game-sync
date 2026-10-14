@@ -15,7 +15,7 @@
 - 导入 Tiny Dungeon 的 132 张独立静态图片及 CC0 授权，移除重复图集、示例地图和预览说明。
 - 添加编辑器导入脚本：Sprite/Single、16 PPU、Point、关闭 Mip Maps、无压缩；Unity 已生成资源 .meta 文件。
 - 添加项目级 AGENTS.md，明确帧同步必须使用确定性数学和模拟逻辑。
-- 添加 tools/SyncMain 同步工具：将本地 main 固定提交分别合并到两个 dev，默认 fetch 后原子推送 origin；支持 -NoPush，恢复原分支，拒绝脏工作区与远程分叉，冲突时中止当前合并。2026-10-14 使用 Windows PowerShell 5.1 在临时仓库验证正常/重复同步、分叉合并与方案隔离、脏工作区拒绝、冲突恢复和本地裸仓库原子推送，均通过；未对本项目两个 dev 执行同步或推送。
+- 添加 tools/SyncMain 同步工具：将本地 main 固定提交分别合并到两个 dev，默认 fetch 后原子推送 origin；支持 -NoPush，恢复原分支，拒绝脏工作区与远程分叉，冲突时中止当前合并。2026-10-14 使用 Windows PowerShell 5.1 在临时仓库验证正常/重复同步、分叉合并与方案隔离、脏工作区拒绝、冲突恢复和本地裸仓库原子推送，均通过。随后在本项目实际执行 tools/SyncMain/sync-main.cmd：两个 dev 均快进合并 main（a421172），原子推送成功；核对本地与远程三个分支提交一致、两个 dev 相对 main 的文件差异为空，自动恢复 main，工作区干净。
 
 ## 当前状态与限制
 
