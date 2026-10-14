@@ -99,3 +99,12 @@ Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相
 - 2026-10-15：ConfigBinaryReader 移至 shared/Runtime/Config，保留原 .meta/GUID，双端共用；移除导表中的解码器生成及模板副本。重新导出 133 条配置，服务端与 Unity 兼容编译通过。
 
 - 2026-10-15：配置生成目录调整为 shared/Runtime/Gen/Client/Config 与 shared/Runtime/Gen/Server/Config，为后续协议生成预留同级目录；移动既有脚本时保留 .meta/GUID，导表默认路径同步调整。
+
+
+- 2026-10-15：新增 GameMainBootstrap 并挂载到 MapRoot，引用 Units；启动加载配置，默认异步加载 unit Prefab 与 0084 Sprite，生成 LocalPlayer 外观于 (-4.5,6.5)。按用户要求暂不实现逻辑层，未加入移动、整数状态或输入组件，后续逻辑位置由共享定点数模拟提供；编辑状态 Units 保持为空。当前仅用于 Editor，Player 资源后端仍未实现；编译通过，Unity 刷新、Console 与实际运行显示尚未验证，未新增测试代码。
+
+- 2026-10-15：用户 Unity Console 报告共享包重复导入 GameSync.Shared（CS1704/CS0436）。此前程序集边界不能阻止包内 DLL 被识别，已通过 shared/Directory.Build.props 将 bin/obj 移至包外 .build/shared，并清理旧产物。Unity 刷新后 Console 结果待确认。
+
+- 2026-10-15：用户 Play 截图确认玩家外观已生成。最新 Editor.log 的三个异常分别来自 GameObjectInspector.OnDisable、TransformInspector.OnEnable → Editor.CreateSerializedObject、GameObjectInspector.OnEnable → PrefabUtility.IsPartOfVariantPrefab，均发生在 Play 域重载期间且早于场景反序列化完成；调用栈没有项目脚本。Inspector 的目标对象引用失效，具体失效对象与布局恢复原因无法由现有日志确认，待重建 Inspector/恢复布局后复查，未宣称 Console 无错误。
+
+- 2026-10-15：临时诊断定位到目标为空的残留 GameObjectInspector #-37602 与 TransformInspector #-37604；定向销毁失效 Editor 后用户确认 Play 无报错且玩家外观已生成。提交前已移除临时诊断和按实例 ID 清理代码，不纳入正式实现；尚无键盘移动或定点数模拟。共享构建产物已移至 .build/shared，避免本地包重复导入 DLL。

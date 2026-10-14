@@ -42,3 +42,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# 共享工程产物置于 Unity 包目录之外
+/.build/

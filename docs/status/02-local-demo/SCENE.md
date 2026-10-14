@@ -30,3 +30,11 @@
 导入时核对 697 个非空格；移除 Units 后保留 680 个静态 SpriteRenderer，当前仅有 Dungeon/Objects 静态层、翻转/旋转规则、场景 fileID 和资源引用，并检查按原图拼接的离线预览。离线预览不是 Unity 截图；Unity 导入、Console 和 Game 画面尚未实际验证。需在已打开的 Unity 中打开 GameMain 确认，不启动第二个实例。
 
 CC0 授权保留于 `client/Assets/Art/KenneyTinyDungeon/License.txt`。
+
+## 玩家外观生成
+
+GameMain 的 MapRoot 挂载 GameMainBootstrap，引用 MapRoot/Units。Editor Play 时先加载配置，再通过 ResourceManager 异步读取 unit Prefab 和 tiny_dungeon_tile_0084 外观；LocalPlayer 在 Units 下生成，显示位置 (-4.5,6.5)。编辑状态 Units 保持为空，退出运行不保存生成物体。
+
+本次只实现启动和外观生成，没有键盘输入、移动或游戏模拟。表现位置不能作为逻辑状态来源，逻辑层待共享定点数方案接入后再实现。当前仅支持 Editor 资源加载，Player 发布运行尚未实现。
+
+编译已通过；用户在 Unity Play 中确认玩家外观生成，清理失效 Editor 后确认 Console 无报错。临时诊断清理脚本已移除；尚未验证 Player 构建。
