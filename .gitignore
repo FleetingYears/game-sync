@@ -1,0 +1,40 @@
+# Unity generated directories
+/[Cc]lient/[Ll]ibrary/
+/[Cc]lient/[Tt]emp/
+/[Cc]lient/[Oo]bj/
+/[Cc]lient/[Bb]uild/
+/[Cc]lient/[Bb]uilds/
+/[Cc]lient/[Ll]ogs/
+/[Cc]lient/[Uu]ser[Ss]ettings/
+/[Cc]lient/[Mm]emoryCaptures/
+/[Cc]lient/[Rr]ecordings/
+
+# IDE files and generated Unity project files
+.vs/
+.idea/
+*.csproj.user
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+/[Cc]lient/*.csproj
+/[Cc]lient/*.sln
+/[Cc]lient/*.slnx
+
+# .NET build output
+**/[Bb]in/
+**/[Oo]bj/
+TestResults/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
