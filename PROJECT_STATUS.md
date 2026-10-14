@@ -11,6 +11,7 @@
 - 建立 Unity 工程，当前版本为 2022.3.62f1c1；场景目前为默认 SampleScene。
 - 建立 C# 控制台服务端，目前仅输出 Hello, World!。
 - 完成计划第 1 步：安装 .NET SDK 10.0.402，将服务端升级到 net10.0；构建与运行验证通过。
+- 添加根目录 Rider 运行配置 .run/Server.run.xml（启动服务端），通过 scripts/run-server.cmd 调用 dotnet run；适用于 Windows，需安装 .NET 10 SDK 和启用 Rider Shell Script 插件。脚本实际运行输出 Hello, World!、退出码 0；配置 XML 可解析，Rider 内识别和点击运行尚未验证。
 - 导入 Tiny Dungeon 的 132 张独立静态图片及 CC0 授权，移除重复图集、示例地图和预览说明。
 - 添加编辑器导入脚本：Sprite/Single、16 PPU、Point、关闭 Mip Maps、无压缩；Unity 已生成资源 .meta 文件。
 - 添加项目级 AGENTS.md，明确帧同步必须使用确定性数学和模拟逻辑。

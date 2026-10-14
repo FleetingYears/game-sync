@@ -39,6 +39,8 @@ dotnet build server/server.csproj 成功；dotnet run --project server/server.cs
 - 初次构建因沙箱禁止写入用户 .dotnet 初始化缓存失败；允许初始化缓存写入后，重新执行上述构建与运行并通过。
 - Rider：读取本机 product-info.json，版本为 2026.2.3.1（构建 262.10968.170）；官方 [Rider 2025.3 说明](https://www.jetbrains.com/rider/whatsnew/2025-3/)已支持 .NET 10。本机版本晚于该版本，尚未在 IDE 内执行构建或调试。
 
+- 补充根目录运行入口：.run/Server.run.xml 提供“启动服务端”配置，使用 Windows cmd.exe 调用 scripts/run-server.cmd；实际执行脚本输出 Hello, World!，退出码 0，XML 可解析。首次脚本验证因沙箱无法读取用户 NuGet.Config 失败，允许访问后重试通过。尚未在 Rider 内确认配置识别与点击运行；该配置不提供 C# 断点调试。
+
 ## 风险与待确认
 
 - 其他开发环境构建服务端需安装 .NET 10 SDK。
