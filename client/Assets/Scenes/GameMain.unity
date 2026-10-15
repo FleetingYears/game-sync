@@ -58161,3 +58161,6 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   m_Units: {fileID: 9001}
+  m_Camera: {fileID: 8014}
+  m_MapWidth: 32
+  m_MapHeight: 20
