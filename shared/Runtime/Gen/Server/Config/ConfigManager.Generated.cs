@@ -6,10 +6,11 @@ namespace GameSync.Config
     public sealed partial class ConfigManager
     {
         /// <summary>自动生成的配置加载清单，由手写入口调用。</summary>
-        partial void LoadGenerated(string projectRoot)
+        private bool LoadGenerated(string projectRoot)
         {
 
             // 当前本端没有配置表；后续导表会自动补充加载调用。
+            return true;
         }
     }
 }

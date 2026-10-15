@@ -148,4 +148,6 @@ int 主键按有符号数值升序，string 主键按 UTF-16 序数升序，与�
 
 ConfigBinaryReader 位于 shared/Runtime/Config，由双端共用，不由导表工具生成或覆盖；工具模板目录只保留表结构相关模板。
 
+配置加载边界更新：Load(byte[])、LoadFromFile(root)、ConfigManager.Instance.LoadAll() 现在返回 bool。失败仅记录一次 Error 并返回 false，单表保留旧快照，调用方应停止本次初始化；多表此前成功加载的表不回滚。LoadCore 和 ConfigBinaryReader 保留底层异常校验。生成清单改为分部类中的 private bool LoadGenerated，按表检查返回值，手写入口不被覆盖。查询接口暂保持原契约，查询未命中应使用 TryGet。
+
 生成的私有成员使用 m_ 加大驼峰命名，成员变量均带中文注释。

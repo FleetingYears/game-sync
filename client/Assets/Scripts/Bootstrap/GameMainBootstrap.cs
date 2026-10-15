@@ -1,5 +1,6 @@
 using System;
 using GameSync.Application;
+using GameSync.Logging;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,7 +19,7 @@ namespace GameSync
             try
             {
                 m_Game = new ClientGame(m_Units);
-                await m_Game.StartAsync();
+                if (!await m_Game.StartAsync()) m_Game.Dispose();
             }
             catch (OperationCanceledException)
             {
@@ -27,7 +28,7 @@ namespace GameSync
             catch (Exception exception)
             {
                 m_Game?.Dispose();
-                if (this != null) Debug.LogException(exception, this);
+                if (this != null) Log.Error("客户端初始化失败，已释放本次创建的外观。", exception);
             }
         }
 

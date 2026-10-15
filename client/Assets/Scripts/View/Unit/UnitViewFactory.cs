@@ -16,8 +16,10 @@ namespace GameSync.View.Unit
             cancellationToken.ThrowIfCancellationRequested();
             var resources = ResourceManager.Instance;
             GameObject prefab = await resources.LoadPrefab("unit");
+            if (prefab == null) return null;
             cancellationToken.ThrowIfCancellationRequested();
             Sprite sprite = await resources.LoadSprite(spriteId);
+            if (sprite == null) return null;
             cancellationToken.ThrowIfCancellationRequested();
             if (parent == null) throw new InvalidOperationException("单位外观父节点已销毁。");
 

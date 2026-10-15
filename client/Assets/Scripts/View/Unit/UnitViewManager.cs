@@ -39,6 +39,7 @@ namespace GameSync.View.Unit
             try
             {
                 UnitView view = await m_Factory.CreateAsync(unitId, spriteId, m_Root, position, m_Lifetime.Token);
+                if (view == null) return null;
                 if (m_Disposed)
                 {
                     if (view != null) Object.Destroy(view.gameObject);

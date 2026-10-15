@@ -401,7 +401,7 @@ def generate_csharp(tables: list[Table], enums: dict, bytes_directory="client/Re
             raise ConfigError(f"枚举 {name} 的成员转为大驼峰后重名")
         if name in members:
             raise ConfigError(f"枚举成员不能与枚举类型同名：{name}")
-    header = "// 此文件由导表工具自动生成，请勿手动修改。\nusing System;\nusing System.Collections.Generic;\nusing System.IO;\n\nnamespace GameSync.Config\n{\n"
+    header = "// 此文件由导表工具自动生成，请勿手动修改。\nusing System;\nusing System.Collections.Generic;\nusing System.IO;\nusing GameSync.Logging;\n\nnamespace GameSync.Config\n{\n"
     for table in tables:
         name = class_name(table.name)
         lines = [header, "    [Serializable]\n", f"    public sealed class {name}\n    {{\n"]
@@ -444,14 +444,14 @@ def generate_csharp(tables: list[Table], enums: dict, bytes_directory="client/Re
         "// 此文件由导表工具自动生成，请勿手动修改。\n\n",
         "namespace GameSync.Config\n{\n    public sealed partial class ConfigManager\n    {\n",
         "        /// <summary>自动生成的配置加载清单，由手写入口调用。</summary>\n",
-        "        partial void LoadGenerated(string projectRoot)\n        {\n",
+        "        private bool LoadGenerated(string projectRoot)\n        {\n",
     ]
     if tables:
         manager.append("\n")
-        manager.extend(f"            {class_name(table.name)}.LoadFromFile(projectRoot);\n" for table in sorted(tables, key=lambda t: t.name))
+        manager.extend(f"            if (!{class_name(table.name)}.LoadFromFile(projectRoot)) return false;\n" for table in sorted(tables, key=lambda t: t.name))
     else:
         manager.append("\n            // 当前本端没有配置表；后续导表会自动补充加载调用。\n")
-    manager.append("        }\n    }\n}\n")
+    manager.append("            return true;\n        }\n    }\n}\n")
     generated["ConfigManager.Generated.cs"] = "".join(manager).encode("utf-8")
     return generated
 

@@ -21,14 +21,15 @@ namespace GameSync.Application
             m_UnitViews = new UnitViewManager(unitsRoot, new UnitViewFactory());
         }
 
-        public async Task StartAsync()
+        public async Task<bool> StartAsync()
         {
             if (m_Disposed) throw new ObjectDisposedException(nameof(ClientGame));
             if (m_Started) throw new InvalidOperationException("客户端流程已经启动。");
             m_Started = true;
-            ConfigManager.Instance.LoadAll();
+            if (!ConfigManager.Instance.LoadAll()) return false;
             // 暂时展示一个单位；后续改由逻辑或同步结果驱动表现。
-            await m_UnitViews.CreateAsync(1, "tiny_dungeon_tile_0084", new Vector3(-4.5f, 6.5f, 0));
+            UnitView view = await m_UnitViews.CreateAsync(1, "tiny_dungeon_tile_0084", new Vector3(-4.5f, 6.5f, 0));
+            return view != null;
         }
 
         public void Dispose()

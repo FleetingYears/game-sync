@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using GameSync.Logging;
 
 namespace GameSync.Config
 {
@@ -34,11 +35,11 @@ namespace GameSync.Config
         /// </summary>
         public string Remark { get; private set; } = string.Empty;
 
-        /// <summary>保护配置加载和查询的一致性锁。</summary>
+        /// <summary>保护配置快照的发布与查询。</summary>
         private static readonly object m_Sync = new object();
-        /// <summary>按主键索引当前配置记录。</summary>
+        /// <summary>按主键索引当前配置。</summary>
         private static Dictionary<string, ArtResourceConfig> m_Index;
-        /// <summary>按导出顺序保存当前全部配置的只读列表。</summary>
+        /// <summary>保存当前全部配置的只读列表。</summary>
         private static IReadOnlyList<ArtResourceConfig> m_All;
 
         /// <summary>是否已成功加载过配置。</summary>
@@ -61,18 +62,43 @@ namespace GameSync.Config
             }
         }
 
-        /// <summary>按仓库根目录与 BytesPath 读取文件，再加载配置。</summary>
-        public static void LoadFromFile(string projectRoot)
+        /// <summary>读取并加载配置；失败记录错误、返回 false，并保留旧配置。</summary>
+        public static bool LoadFromFile(string projectRoot)
         {
             if (string.IsNullOrWhiteSpace(projectRoot))
             {
-                throw new ArgumentException("必须提供仓库根目录。", nameof(projectRoot));
+                Log.Error("配置加载失败，未提供根目录：ArtResourceConfig");
+                return false;
             }
-            Load(File.ReadAllBytes(Path.Combine(projectRoot, BytesPath)));
+            try
+            {
+                LoadCore(File.ReadAllBytes(Path.Combine(projectRoot, BytesPath)));
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Error("配置文件加载失败：ArtResourceConfig，路径：" + BytesPath, exception);
+                return false;
+            }
         }
 
-        /// <summary>加载二进制；全部校验成功后替换旧配置，失败保留旧配置。</summary>
-        public static void Load(byte[] bytes)
+        /// <summary>加载二进制；失败记录错误、返回 false，并保留旧配置。</summary>
+        public static bool Load(byte[] bytes)
+        {
+            try
+            {
+                LoadCore(bytes);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Error("配置解码失败：ArtResourceConfig", exception);
+                return false;
+            }
+        }
+
+        // 底层校验失败立即中止，由上层加载边界统一处理，不发布半成品。
+        private static void LoadCore(byte[] bytes)
         {
             using (var reader = new ConfigBinaryReader(bytes))
             {
