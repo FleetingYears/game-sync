@@ -1,12 +1,17 @@
 # 计划 2：2D 双人 Demo 本地原型
 
-状态：进行中（官方示例地牢已转换，Unity 验证待完成，玩法未开始）；最后更新：2026-10-15。
+状态：进行中（公共表现接口与静态展示已实现，本次 Unity 验证待完成，玩法未开始）；最后更新：2026-10-15。
 
 ## 目标
 
 使用 Tiny Dungeon 创建可验证的本地双人俯视角玩法，为后续联网提供表现与交互基础。
 
 ## 当前进度
+
+新增 Scene 网格调试窗口，菜单 GameSync/调试/地图网格，显示网格、原点、悬停格子的列行与世界格心坐标；可切换全部坐标。只读场景配置，无运行时代码或场景修改。
+UI 当前使用独立相机的 Screen Space Camera，CanvasScaler 参考分辨率 1920×1080、Match Height=1；游戏固定横屏，PlayerSettings 禁止竖屏自动旋转。血条投影区分游戏相机和 UI 相机。
+HUD 与血条已迁移为 uGUI，启动创建 GameUI Canvas 和屏幕血条容器，使用 CanvasScaler 适配窗口；不再通过 OnGUI 绘制。当前 UI 由代码构造，后续美术布局可再抽取 Prefab，尚未实现掉血飘字。
+公共表现已按 Unit、Map、Camera、UI 分目录实现，详见 [公共表现接入与验收](PRESENTATION.md)。单位支持显示位置、左右朝向、箭矢旋转、Sprite 序列动画、血条、受击闪色、外部音效播放及隐藏/显示。动画与音效尚无实际序列/音频素材；血量和箭矢仅静态展示，不代表生命值或射击逻辑已实现。
 
 客户端美术资源源表 config/Excels/Client/art_resource.xlsx 已按四行表头整理，字符串 ID、Sprite/Prefab 枚举、无后缀资源路径，普通单元格，共 133 条（132 个 Sprite、1 个 Unit Prefab）。tools/ConfigExporter/export.cmd 已实际生成 client/Res/Config/art_resource.bytes；C# 数据类已生成至 shared/Runtime/Gen/Client；配置按 Key 加载/查询已实现；Editor 资源加载已实现（默认异步、支持同步）；Player 加载未实现。
 
@@ -39,6 +44,8 @@ UnitView、UnitViewFactory、UnitViewManager 只管理显示与外观生命周�
 
 ## 任务拆解
 
+- [x] 实现公共表现接口、按职责组织文件，并接入场景静态展示
+- [ ] Unity 内验收公共表现、退出/取消和失败清理，接入实际动画序列及音频素材
 - [x] 按用途整理 Sprite 目录，保留图片与原始 .meta/GUID，更新导入脚本的递归扫描
 - [x] 创建 Sprite Atlas 并配置像素图集参数
 - [ ] 创建独立 Demo 场景，配置正交相机与地面/墙体
@@ -54,6 +61,13 @@ UnitView、UnitViewFactory、UnitViewManager 只管理显示与外观生命周�
 Unity 中可运行双人本地移动、攻击、扣血和重生；Console 无相关错误；尚不宣称联网或跨平台确定性。
 
 ## 验证记录
+
+- 2026-10-15：用户运行截图确认 1920×1080、预览 Scale=0.5 时角色、血条和完整中文 HUD 可见。仅确认该画面的显示结果，Console、其他比例、生命周期与网格工具实际交互仍待验证。
+- 2026-10-15：MapGridWindow 使用真实 Unity Editor 程序集兼容编译通过，0 警告、0 错误；未新增测试代码，Scene 实际显示、悬停与开关待验证。
+- 2026-10-15：独立 UI 相机与 1920×1080 横屏适配通过真实 Unity/uGUI 程序集兼容编译（0 警告、0 错误）。Play、不同横屏比例的布局及设备旋转尚未验证。
+- 2026-10-15：uGUI 迁移通过真实 Unity/uGUI 程序集兼容编译（0 警告、0 错误），已检查 OnGUI 调用移除与 UI 生命周期代码；Unity Play、中文字体显示和窗口缩放仍待验证。
+- 2026-10-15：用户实际 Play 报告 ArgumentNullException（camera），不能将此前兼容编译视为运行通过。磁盘相机绑定存在；新增 Bootstrap 相机解析，优先显式绑定，否则选择同场景唯一启用 MainCamera，缺失/重复明确报错。修复后 Unity 实际运行仍待验证。
+- 2026-10-15：在 feat_common_presentation 实现公共表现，dotnet build server/server.csproj 及真实 Unity 程序集的 netstandard2.1/C#7.3 兼容编译通过，均为 0 警告、0 错误。场景显式绑定 MainCamera，保留既有脚本 GUID 和 Units 引用；未新增测试代码。本次 Unity 内刷新、Console、Play、实际音效/动画及取消竞态尚未验证。
 
 - 2026-10-15：按用户要求采用官方示例，不使用自行设计的大厅。sampleMap.tmx 的 32×20 格地图已转为 GameMain 并加入 Build Settings，Dungeon/Objects/Carts 分别为 640/54/3 个 SpriteRenderer；62 格的翻转/旋转按 Tiled 规则核对，场景 fileID 与资源引用通过静态检查，离线预览按原素材及地图生成。未增加碰撞、出生点或玩家逻辑。场景任务仍未勾选，需在 Unity 中检查导入、Console 和画面后完成验收。
 - 2026-10-14：使用 PowerShell 检查分类编号完整且无重复；移动前后 132 张 PNG 与 132 个原始 .meta 的 SHA-256 全部一致，图片、导入设置和 GUID 未改变；为新增目录创建独立 folder .meta。
