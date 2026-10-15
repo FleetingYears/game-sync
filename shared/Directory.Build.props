@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- 构建产物必须位于 Unity 本地包之外，防止 DLL 与源码重复导入。 -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)../.build/shared/bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)../.build/shared/obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>

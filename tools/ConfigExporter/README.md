@@ -102,7 +102,7 @@ var sprites = ArtResourceConfig.FindAll(c => c.Type == ArtResourceType.Sprite);
 - `Find(Predicate<T>)`：O(n)，返回首个匹配项，无匹配项返回 null。
 - `FindAll(Predicate<T>)`：O(n)，返回全部匹配项的只读列表。条件不能为 null，条件中抛出的异常由调用方处理。
 
-配置类直接使用 _index 字典和 _all 列表成员，不使用嵌套类或额外数据容器。加载时先构建临时数组、字典和只读列表，全部校验通过后在同一把锁内替换两个成员，失败保留旧数据；按 Key 查询和获取列表也在锁内取一致数据，条件回调在锁外执行。重载后已持有的旧列表/记录引用仍表示旧快照，不会自动更新。公开属性均为 private set，Key 不能被外部修改；数组仍是约定的 T[]，不要修改数组元素，以保持配置只读使用。
+配置类直接使用 m_Index 字典和 m_All 列表成员，不使用嵌套类或额外数据容器。加载时先构建临时数组、字典和只读列表，全部校验通过后在同一把锁内替换两个成员，失败保留旧数据；按 Key 查询和获取列表也在锁内取一致数据，条件回调在锁外执行。重载后已持有的旧列表/记录引用仍表示旧快照，不会自动更新。公开属性均为 private set，Key 不能被外部修改；数组仍是约定的 T[]，不要修改数组元素，以保持配置只读使用。
 
 读取器校验 magic、版本、来源/表名、字段数/顺序/类型/标志、主键索引、枚举名称及固定值；校验字符串与数组长度、严格 UTF-8、bool 编码、有限浮点值、必填字符串、Key 空白/重复和尾部多余字节。字典的字符串比较使用 StringComparer.Ordinal。当前同步加载设计，不包含异步配置加载、美术资源实例化或热更新调度。
 
@@ -149,3 +149,5 @@ int 主键按有符号数值升序，string 主键按 UTF-16 序数升序，与�
 ConfigBinaryReader 位于 shared/Runtime/Config，由双端共用，不由导表工具生成或覆盖；工具模板目录只保留表结构相关模板。
 
 配置加载边界更新：Load(byte[])、LoadFromFile(root)、ConfigManager.Instance.LoadAll() 现在返回 bool。失败仅记录一次 Error 并返回 false，单表保留旧快照，调用方应停止本次初始化；多表此前成功加载的表不回滚。LoadCore 和 ConfigBinaryReader 保留底层异常校验。生成清单改为分部类中的 private bool LoadGenerated，按表检查返回值，手写入口不被覆盖。查询接口暂保持原契约，查询未命中应使用 TryGet。
+
+生成的私有成员使用 m_ 加大驼峰命名，成员变量均带中文注释。

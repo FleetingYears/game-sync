@@ -2,6 +2,11 @@
 
 本文件适用于整个仓库；子目录若有 AGENTS.md，遵守其更具体的约定。
 
+## 代码技能
+
+- 生成、修改或重构代码前，必须读取并遵守 [.agents/skills/game-sync-code/SKILL.md](.agents/skills/game-sync-code/SKILL.md)。命名、注释、代码写法及生成流程在技能中维护；技能必须遵守本文件的全项目约束。
+- 本文件维护全项目目标、架构、资产、配置、坐标、验证和仓库协作要求，避免与技能重复；用户当前明确指令优先。
+
 ## 项目目标
 
 - 研究网络游戏状态同步和帧同步，客户端使用 Unity，服务端使用 C#/.NET 控制台应用。
@@ -9,48 +14,43 @@
 
 ## 目录
 
-- client/：Unity 工程。Assets 为资源和脚本，Packages 为依赖，ProjectSettings 为工程设置。
-- client/Assets/Scenes/：Unity 场景。
-- client/Assets/Scripts/：Unity 客户端代码，Logic/Resource 为资源单例；配置和单例基类位于 shared/Runtime；Editor API 放在 Assets/Editor。
-- client/Assets/Art/KenneyTinyDungeon/Tiles/：132 张 16×16 静态像素图片，按 Environment、Props、Characters、Items、Projectiles、UI 及用途子目录分类，保留原编号文件名；并非完整角色动画。
-- client/Assets/Art/KenneyTinyDungeon/License.txt：Kenney 素材的 CC0 授权说明，随素材保留。
-- client/Assets/Editor/KenneyTinyDungeonImporter.cs：仅编辑器运行的像素导入配置。
-- shared/：双端共用的 netstandard2.1 类库，同时作为 Unity 本地源码包；server 使用 ProjectReference，client 通过 Packages 引用。Runtime 不依赖 Unity，程序集定义限制引用引擎 API。
-- server/Program.cs：服务端入口；server/server.csproj：项目配置；server/server.sln：IDE 解决方案。
-- tools/：开发工具，一个工具一个独立子目录，脚本及使用说明放在对应目录内。
-- tools/ConfigExporter/：Excel 校验、二进制与 C# 类生成工具，类型、格式和命令见该目录 README.md。
-- config/Excels/{Client,Server,Shared}/：分别用于客户端、服务端及共享的 Excel 配置源文件，按实际需求添加文件。
-- client/Res/Config/、server/Res/Config/：对应两端的 .bytes 配置输出，Shared 表分别输出到两端；这些路径相对仓库根目录。
-- 共享协议和确定性模拟代码应独立于 Unity 表现层，具体目录以项目进度文件为准。
+- client/：Unity 工程；运行时代码在 Assets/Scripts，编辑器代码在 Assets/Editor，场景在 Assets/Scenes。
+- server/：C# 服务端；Program.cs 为入口，server.csproj 为项目，server.sln 为解决方案。
+- shared/：双端共用 C# 类库及 Unity 本地源码包。
+- config/Excels/{Client,Server,Shared}/：配置源表；client/Res/Config、server/Res/Config 为二进制输出。
+- tools/：一个工具一个目录，包含脚本及说明；导表工具见 tools/ConfigExporter/README.md。
+- docs/status/：分阶段计划与验证记录；当前状态以 PROJECT_STATUS.md 为准。
+- client/Assets/Art/KenneyTinyDungeon/License.txt：素材授权，随素材保留；完整素材包在仓库外 art 目录。
 
-## 语言约定
+## 架构与依赖
 
-- Git 提交信息一律使用中文，包括标题和正文；保留必要的类名、路径、API 名称等技术标识。
-- 新增或修改的代码注释一律使用中文，包括行注释、块注释和 XML 文档注释；第三方原始资源及授权文本保持原样。
-- C# public 成员使用大驼峰（PascalCase）；优先通过 using 使用简洁类型名，非必要不使用类型全名或嵌套类。配置字典和列表直接作为配置类成员，不额外引入数据容器。
+- 保持实现简单，以便理解同步原理；不提前引入复杂框架或基础设施。规划目录不代表功能已实现，用户明确要求的空目录骨架可用 .gitkeep 保留，不自动添加占位类或功能。
+- 模拟与表现分离：逻辑或同步状态单向驱动外观，Transform、图片、动画、渲染帧率和 Unity Physics 不作为模拟结果依据。创建单位外观属于表现层。
+- Bootstrap 连接场景引用并管理启动/退出；Application 协调流程；Input 采集操作；View 管理单位、地图、相机和 UI 表现。UnitView、UnitViewFactory、UnitViewManager 分别负责单体显示、创建和 ID 映射/生命周期。
+- client、server、shared 的 StateSync 与 FrameSync 只能依赖公共基础，不能互相引用；公共基础不能反向依赖方案实现。客户端公共代码在 Assets/Scripts/{Bootstrap,Application,Logic,Input,View}，服务端公共代码在 server/Shared，共用代码在 shared/Runtime。
+- shared 使用 netstandard2.1、C# 7.3，不依赖 UnityEngine/UnityEditor。server 通过 ProjectReference 引用，client 通过本地源码包引用；构建产物输出到包外 .build/shared，禁止将 bin/obj 或 DLL 放回包内。
+- 普通管理器需要单例时复用 shared/Runtime/Singleton<T>；ConfigManager 位于 shared/Runtime/Config，ResourceManager 位于 client/Assets/Scripts/Logic/Resource。不要将所有应用服务和表现对象都改为单例。
 
-- 普通管理器单例继承 shared/Runtime/Singleton<T>，派生类使用私有无参构造，通过 Instance 获取；共享 ConfigManager 放在 shared/Runtime/Config，客户端 ResourceManager 放在 Assets/Scripts/Logic/Resource。
+## 确定性模拟
 
-## 修改约定
+- 游戏逻辑使用明确的固定 Tick，双端共同执行时复用同一套数学与模拟实现，保持稳定遍历与执行顺序、显式随机种子。
+- 帧同步数学采用明确的整数/定点数方案，定义精度、舍入、除法、溢出、平方根和三角函数规则；禁止依赖平台浮点误差、Unity Physics 或渲染结果。定点数方案未确定前，不自行引入临时模拟替代。
+- 表现可使用 Unity 浮点坐标，但不得反向回写模拟状态。确定性验证应覆盖数学边界、录制输入回放及逐帧逻辑状态哈希，哈希不包含表现数据；测试代码范围遵守下方验证约定。
 
-- 以便于理解同步原理为目标，保持实现简单，避免提前引入复杂框架或基础设施。
-- 模拟逻辑与 Unity 表现分离；图片、动画、渲染帧率不能作为模拟结果的依据。
-- 后续游戏逻辑使用明确的固定 Tick；帧同步需控制随机数、执行顺序和数学确定性，不假定 Unity 浮点物理跨平台结果一致。
-- 帧同步必须实现确定性数学计算：模拟层使用明确的整数/定点数方案，定义精度、舍入、除法、溢出、平方根和三角函数规则；禁止依赖平台浮点误差、Unity Physics 或渲染结果。
-- 客户端与服务端若共同执行模拟，复用同一套确定性数学与模拟实现；使用固定步长、显式随机种子和稳定遍历顺序，明确操作顺序。
-- 添加可重复的数学边界用例和录制输入回放验证；按帧计算逻辑状态哈希，用于检查跨运行/跨平台一致性，哈希不包含表现层数据。
-- 保留 Unity .meta 文件和 GUID；移动资源时同时移动其 .meta，不随意重新生成已有 GUID。
-- Tiny Dungeon 独立图片使用 Sprite/Single、16 PPU、Point 过滤、关闭 Mip Maps、无压缩，默认 Scale 为 1 时一张地砖对应一个世界单位。
-- Unity 工程只保留必要的独立图片与授权，不重新复制重复图集、Tiled 示例、预览图或素材说明。完整素材包存放在仓库外的 art 目录。
-- Editor API 代码放在 Assets/Editor 下；共享给 Unity 的代码须检查 Unity 支持的 C# 与 .NET API，不能直接照搬服务端最新 API。
+## Unity 资源与运行环境
 
-## Excel 配置约定
+- 保留 .meta 和 GUID；移动资源或脚本时同时移动 .meta。序列化字段重命名需保留旧字段映射或迁移资产引用，检查场景/Prefab 绑定。
+- Editor API 仅放 Assets/Editor，通过宏隔离；Unity 对象和 AssetDatabase 操作在主线程执行，不用 Task.Run/后台线程实现资源加载。资源默认异步、支持显式同步，下一次 Editor 更新执行不等于后台 I/O。
+- 外观复用 Unit Prefab 并替换 Sprite；异步创建应处理退出取消、重复 ID 和失败清理，避免场景或管理器释放后继续生成。临时诊断和按运行期实例 ID 清理的代码不进入正式实现。
+- Tiny Dungeon 独立图片采用 Sprite/Single、16 PPU、Point、关闭 Mip Maps、无压缩、默认 Scale=1。只保留必要独立图片和授权，不复制重复图集、Tiled 示例、预览或素材说明；完整包在仓库外 art 目录。
+
+## 配置与导表
 
 - 数据页第 1 行字段名、第 2 行类型、第 3 行 key/required/optional 规则、第 4 行中文说明，第 5 行起为数据；以 _ 开头的工作表不导出。
 - 源表使用普通单元格，不添加装饰样式、Excel Table、筛选或冻结；数据页禁止公式和合并单元格。字符串标识符须按文本存储，保留前导零。
 - art_resource 的 id 为字符串稳定键，asset_path 使用 Assets/ 开头、/ 分隔的无后缀路径；type 填写 ArtResourceType 枚举名称 Sprite/Prefab，枚举固定值分别为 1/2。
 - 导表路径相对仓库根目录，不能写死开发机目录。输出目录仅存工具管理文件，保留 .config-exporter.json 管理标记，不手动放入其他文件。
-- C# 配置生成到 shared/Runtime/Gen/Client/Config 和 shared/Runtime/Gen/Server/Config，通过 Unity 宏选择本端代码；Shared 源表分别进入两端清单。生成 public 成员使用 PascalCase，Excel/二进制保留原字段名；不手改生成文件，保留 .meta/GUID。
+- C# 配置生成到 shared/Runtime/Gen/Client/Config 和 shared/Runtime/Gen/Server/Config，通过 Unity 宏选择本端代码；Shared 源表分别进入两端清单。Excel/二进制保留原字段名；不手改生成文件，保留 .meta/GUID。
 - shared/Runtime/Config/ConfigManager.cs 为手写共享入口，不由导表覆盖；ConfigManager.Instance.LoadAll() 调用本端自动生成的分部加载清单。服务端默认使用 AppContext.BaseDirectory，客户端 Editor 平台桥接注册根目录获取函数。单表提供 Load/LoadFromFile、Get/TryGet、GetAll、Find/FindAll，加载失败保留旧数据；BytesPath 保持对应端的仓库相对路径。
 - 二进制 GSCF 的版本、编码与字段布局以 tools/ConfigExporter/README.md 为准；修改协议须明确兼容关系与验证，不将表现用 float/double 配置当作确定性数学方案。
 
@@ -59,7 +59,7 @@
 - 俯视角玩法使用 Unity XY 平面：+X 向画面右侧，+Y 向画面上方；地图、角色和弹射物的逻辑位置使用二维 (x, y)，表现默认 Z=0。Z 不作为游戏高度或移动轴，遮挡优先使用 Sorting Layer/Order。
 - 世界单位统一为一格地砖=1 单位：16×16 图片使用 16 PPU，地图和图块 Transform Scale 保持 (1, 1, 1)。角色速度等量使用世界单位与秒定义，不使用屏幕像素。
 - 地图根节点使用 MapRoot；根节点和图层节点保持位置 (0, 0, 0)、无旋转、Scale=(1, 1, 1)，使图块的局部坐标与世界坐标一致。单个图块为复现素材翻转可绕 Z 旋转，不改变格子中心。
-- 可动态生成或操控的单位统一放在 MapRoot/Units 下，与 MapRoot 下的静态图层节点分开管理；Units 保持零位置、无旋转和单位缩放，单位局部坐标与世界坐标一致。生成的人物、怪物、矿车按此组织；当前 Units 为空，尚未实现控制或生成逻辑。
+- 可动态生成或操控的单位统一放在 MapRoot/Units 下，与 MapRoot 下的静态图层节点分开管理；Units 保持零位置、无旋转和单位缩放，单位局部坐标与世界坐标一致。生成的人物、怪物、矿车按此组织；编辑状态 Units 保持为空，运行时外观由表现层管理。
 - 地图整体中心为世界原点。对于宽 W、高 H 的地图，Tiled 列 c 向右增加、行 r 向下增加，均从 0 开始；格子中心映射为 x=c-(W-1)/2、y=(H-1)/2-r。偶数尺寸地图的格子中心是半整数，原点位于中央四格的交点，不能将其直接截断成整数。
 - 当前 32×20 示例地图：格子中心 x=-15.5..15.5、y=-9.5..9.5，外边界 x=±16、y=±10；左上格中心 (-15.5, 9.5)，右下格中心 (15.5, -9.5)。Tiled 行号与 Unity Y 的方向相反。
 - 相机使用正交投影，无旋转，位于地图前方的负 Z 侧并朝 +Z 查看；当前 MainCamera 在 (0, 0, -10)。相机缩放、分辨率与 Sprite 旋转只影响表现，不改变模拟坐标。
@@ -67,16 +67,15 @@
 
 ## 验证
 
-- 服务端构建：在仓库根目录运行 dotnet build server/server.csproj。
-- 服务端启动：dotnet run --project server/server.csproj。
-- Unity 修改：打开 client 工程，等待刷新和编译，检查 Console 错误；涉及画面或交互时在对应场景中验证。
-- 不启动第二个 Unity 实例访问已打开的同一工程；未实际执行的构建、导入或运行不能报告为已通过。
-- 针对确定性数学、协议和模拟结果添加必要测试；测试现状与实际验证结果记录在 PROJECT_STATUS.md。
+- 服务端构建：在仓库根目录执行 dotnet build server/server.csproj；启动使用 dotnet run --project server/server.csproj。
+- Unity 使用已打开的 client 工程刷新、编译与运行，不启动第二个实例访问同一工程。
+- 未经用户明确要求，不新增测试代码；按任务运行现有检查、构建及必要实际验证。数学、协议和模拟测试目标按授权范围推进。
+- 未执行的构建、导入或运行不得报告为通过；外部 Unity API 兼容编译不能替代 Unity 内刷新、Console 和 Play 验证，真实结果记录到状态文档。
 
 ## 提交前文档复核
 
 - 每完成一部分功能，在提交前回头核对 AGENTS.md、PROJECT_STATUS.md 及相关 docs/status/*/STATUS.md，依据当前代码、配置及实际验证结果修改错误、过时或遗漏的内容。
-- AGENTS.md 记录长期约定，PROJECT_STATUS.md 记录当前状态、验证结果与计划；实现变化不能只更新代码而留下误导后续开发的文档。
+- AGENTS.md 记录全项目约束，代码技能记录生成流程与代码写法，PROJECT_STATUS.md 记录当前状态、验证结果与计划；实现变化不能只更新代码而留下误导后续开发的文档。
 - 不将未实现、未验证或尚在进行的工作写为已完成；无法确认的事项明确标注。
 
 ## 分支用途与合并约束
@@ -94,15 +93,9 @@
 - 从方案中提取公共代码时，从 main 新建 feat_common_*，单独整理、验证后合入 main；不能用整支合并或直接 cherry-pick 混入方案专属代码。
 - 不使用 rebase、cherry-pick 或补丁复制绕过上述隔离限制；允许的合并关系不等于自动发布授权，实际推送仍遵守用户指令。
 
-## 代码结构与依赖隔离
-
-- 客户端和服务端的代码分别区分 Shared、StateSync、FrameSync：Shared 为公共协议、模拟基础和可复用代码，后两者为方案专属实现。
-- 代码目录建立时，Unity 运行时代码可使用 client/Assets/Scripts/{Shared,StateSync,FrameSync}/，服务端可使用 server/{Shared,StateSync,FrameSync}/；共享类库独立时保持同样的依赖方向，Editor 脚本仍放在 Assets/Editor。
-- StateSync 与 FrameSync 可以依赖 Shared，但不能相互依赖；Shared 不能反向依赖具体同步方案。
-- 不为记录约定提前创建空目录或占位实现，按实际功能需要建立目录或程序集边界。
-
 ## Git 与公开发布
 
+- Git 提交信息一律使用中文，包括标题和正文；保留必要的技术标识。
 - 远程仓库：https://github.com/FleetingYears/game-sync，为公开仓库，主要分支为 main。
 - client 与 server 共用根目录 Git 仓库，不在子目录创建嵌套仓库。
 - 提交源码、必要素材、.meta、Packages 和 ProjectSettings；不提交 Library、Temp、Logs、UserSettings、bin、obj 等生成目录。

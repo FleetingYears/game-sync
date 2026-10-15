@@ -43,5 +43,5 @@ __pycache__/
 Thumbs.db
 Desktop.ini
 
-# 仓库内独立构建验证产物
+# 共享工程产物置于 Unity 包目录之外
 /.build/

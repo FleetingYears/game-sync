@@ -100,3 +100,22 @@
 - 2026-10-15：在 feat_common_logging 从 main 独立开发共享日志，新增 shared/Runtime/Logging 的 Log、LogLevel、ILogSink、ConsoleLogSink；默认 Debug，支持最低级别过滤、关闭、异常堆栈及线程安全后端配置。客户端 UnityLogSink 在运行前自动注册并每次重设日志级别；共享库无 Unity 依赖。共享 netstandard2.1 构建与真实 Unity API 的 C#7.3 兼容编译通过，均为 0 警告、0 错误；构建产物放在包外 .build/logging，未新增测试代码，未验证实际 Console 输出。未将其他未合并公共功能分支直接混入本分支。
 
 - 2026-10-15：按边界捕获与兜底规则改版：代码技能新增异常处理约定；配置生成 Load/LoadFromFile 及手写 LoadAll 返回 bool，底层校验异常统一捕获、记录一次 Error，保留旧快照，失败停止后续加载。资源入口捕获读取异常并返回 null，缺失 ID 使用 TryGet，首次配置失败不继续读取；取消不记错误。日志后端失败回退标准错误流，避免故障递归。生成器及模板同步更新；共享库、Unity API 兼容编译通过，实际失败路径运行尚未验证。
+
+
+- 2026-10-15：新增 GameMainBootstrap 并挂载到 MapRoot，引用 Units；启动加载配置，默认异步加载 unit Prefab 与 0084 Sprite，生成 LocalPlayer 外观于 (-4.5,6.5)。按用户要求暂不实现逻辑层，未加入移动、整数状态或输入组件，后续逻辑位置由共享定点数模拟提供；编辑状态 Units 保持为空。当前仅用于 Editor，Player 资源后端仍未实现；编译通过，Unity 刷新、Console 与实际运行显示尚未验证，未新增测试代码。
+
+- 2026-10-15：用户 Unity Console 报告共享包重复导入 GameSync.Shared（CS1704/CS0436）。此前程序集边界不能阻止包内 DLL 被识别，已通过 shared/Directory.Build.props 将 bin/obj 移至包外 .build/shared，并清理旧产物。Unity 刷新后 Console 结果待确认。
+
+- 2026-10-15：用户 Play 截图确认玩家外观已生成。最新 Editor.log 的三个异常分别来自 GameObjectInspector.OnDisable、TransformInspector.OnEnable → Editor.CreateSerializedObject、GameObjectInspector.OnEnable → PrefabUtility.IsPartOfVariantPrefab，均发生在 Play 域重载期间且早于场景反序列化完成；调用栈没有项目脚本。Inspector 的目标对象引用失效，具体失效对象与布局恢复原因无法由现有日志确认，待重建 Inspector/恢复布局后复查，未宣称 Console 无错误。
+
+- 2026-10-15：临时诊断定位到目标为空的残留 GameObjectInspector #-37602 与 TransformInspector #-37604；定向销毁失效 Editor 后用户确认 Play 无报错且玩家外观已生成。提交前已移除临时诊断和按实例 ID 清理代码，不纳入正式实现；尚无键盘移动或定点数模拟。共享构建产物已移至 .build/shared，避免本地包重复导入 DLL。
+
+- 2026-10-15：按用户要求建立完整目录骨架，后续 Input、View/Map/Camera/UI、三端 StateSync/FrameSync、共享 Math/Simulation/Protocol 和协议生成目录仅用 .gitkeep 保留，尚无对应实现。启动脚本移动至 Bootstrap 并保留 .meta/GUID；ClientGame 管理初始化与退出，UnitViewFactory 加载资源并实例化，UnitViewManager 维护 ID/外观映射与生命周期，UnitView 仅更新显示。展示单位 ID 为 1、名字 Unit_1，外观与出生位置保持；没有加入逻辑模拟或输入。退出时取消未完成的生成，创建失败清理实例。服务端构建和真实 Unity 程序集兼容编译均通过（0 警告、0 错误），场景脚本 GUID 静态核对通过；本次重构后 Unity Play 尚未验证，未新增测试代码。
+
+- 2026-10-15：客户端及共享配置、单例的私有成员变量统一为 m_ 加大驼峰，补充中文成员注释；导表模板同步调整并重新导出。Units 序列化字段迁移为 m_Units，保留 FormerlySerializedAs 与场景引用。
+
+- 2026-10-15：新增仓库代码生成技能 .agents/skills/game-sync-code/SKILL.md，只维护代码命名、注释、写法及生成流程；AGENTS.md 保留项目架构、确定性、资源、配置、坐标、验证和 Git 等全项目约束并链接技能。本机安装同名技能，默认允许自动发现。
+
+- 2026-10-15：本地将 feat_common_local_player 合入 main，再从 main 合入 feat_common_logging；保留客户端分层、m_ 命名与日志失败兜底，重新生成配置以解决模板冲突。日志分支在原有已跟踪 SKILL 上追加异常边界规则；ClientGame.StartAsync 返回 bool，配置失败不创建外观，资源为 null 时工厂停止、管理器不登记，Bootstrap 统一清理失败启动；无远端推送。
+
+- 合并验证：服务端正常构建与真实 Unity API 兼容编译均通过，0 警告、0 错误；本次来源为已先快进更新至 91e7aa4 的 main，没有直接合并功能分支。Unity Play 与实际失败兜底路径仍待验证。
