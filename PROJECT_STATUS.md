@@ -119,3 +119,5 @@
 - 2026-10-15：本地将 feat_common_local_player 合入 main，再从 main 合入 feat_common_logging；保留客户端分层、m_ 命名与日志失败兜底，重新生成配置以解决模板冲突。日志分支在原有已跟踪 SKILL 上追加异常边界规则；ClientGame.StartAsync 返回 bool，配置失败不创建外观，资源为 null 时工厂停止、管理器不登记，Bootstrap 统一清理失败启动；无远端推送。
 
 - 合并验证：服务端正常构建与真实 Unity API 兼容编译均通过，0 警告、0 错误；本次来源为已先快进更新至 91e7aa4 的 main，没有直接合并功能分支。Unity Play 与实际失败兜底路径仍待验证。
+
+- 2026-10-15：按用户指定顺序先推送 main 的 91e7aa4，再以独立集成提交将 feat_common_logging 合入本地 main。合并操作教训单独记录在 docs/development/MERGE_LESSONS.md，未增加 AGENTS.md 内容；教训记录与功能合并分开提交，新增主线提交尚未推送。
