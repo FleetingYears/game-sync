@@ -96,6 +96,8 @@
 ## Git 与公开发布
 
 - Git 提交信息一律使用中文，包括标题和正文；保留必要的技术标识。
+- 功能开发期间建议推送功能分支，用于远端备份与协作；实际推送须得到用户授权，不因本约定自动推送。
+- 功能完成后，先合入所属主线并推送主线，确认功能提交已完整包含在远端主线后，再按用户授权删除远端功能分支；本地功能分支按需保留，删除远端分支不代表授权删除本地分支。
 - 远程仓库：https://github.com/FleetingYears/game-sync，为公开仓库，主要分支为 main。
 - client 与 server 共用根目录 Git 仓库，不在子目录创建嵌套仓库。
 - 提交源码、必要素材、.meta、Packages 和 ProjectSettings；不提交 Library、Temp、Logs、UserSettings、bin、obj 等生成目录。
