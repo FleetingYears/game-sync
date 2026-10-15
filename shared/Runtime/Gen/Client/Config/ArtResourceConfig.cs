@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using GameSync.Logging;
 
 namespace GameSync.Config
 {
@@ -34,42 +35,70 @@ namespace GameSync.Config
         /// </summary>
         public string Remark { get; private set; } = string.Empty;
 
-        private static readonly object _sync = new object();
-        private static Dictionary<string, ArtResourceConfig> _index;
-        private static IReadOnlyList<ArtResourceConfig> _all;
+        /// <summary>保护配置快照的发布与查询。</summary>
+        private static readonly object m_Sync = new object();
+        /// <summary>按主键索引当前配置。</summary>
+        private static Dictionary<string, ArtResourceConfig> m_Index;
+        /// <summary>保存当前全部配置的只读列表。</summary>
+        private static IReadOnlyList<ArtResourceConfig> m_All;
 
         /// <summary>是否已成功加载过配置。</summary>
         public static bool IsLoaded
         {
             get
             {
-                lock (_sync)
+                lock (m_Sync)
                 {
-                    return _index != null;
+                    return m_Index != null;
                 }
             }
         }
 
         private static void EnsureLoaded()
         {
-            if (_index == null)
+            if (m_Index == null)
             {
                 throw new InvalidOperationException("配置尚未加载：ArtResourceConfig");
             }
         }
 
-        /// <summary>按仓库根目录与 BytesPath 读取文件，再加载配置。</summary>
-        public static void LoadFromFile(string projectRoot)
+        /// <summary>读取并加载配置；失败记录错误、返回 false，并保留旧配置。</summary>
+        public static bool LoadFromFile(string projectRoot)
         {
             if (string.IsNullOrWhiteSpace(projectRoot))
             {
-                throw new ArgumentException("必须提供仓库根目录。", nameof(projectRoot));
+                Log.Error("配置加载失败，未提供根目录：ArtResourceConfig");
+                return false;
             }
-            Load(File.ReadAllBytes(Path.Combine(projectRoot, BytesPath)));
+            try
+            {
+                LoadCore(File.ReadAllBytes(Path.Combine(projectRoot, BytesPath)));
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Error("配置文件加载失败：ArtResourceConfig，路径：" + BytesPath, exception);
+                return false;
+            }
         }
 
-        /// <summary>加载二进制；全部校验成功后替换旧配置，失败保留旧配置。</summary>
-        public static void Load(byte[] bytes)
+        /// <summary>加载二进制；失败记录错误、返回 false，并保留旧配置。</summary>
+        public static bool Load(byte[] bytes)
+        {
+            try
+            {
+                LoadCore(bytes);
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Log.Error("配置解码失败：ArtResourceConfig", exception);
+                return false;
+            }
+        }
+
+        // 底层校验失败立即中止，由上层加载边界统一处理，不发布半成品。
+        private static void LoadCore(byte[] bytes)
         {
             using (var reader = new ConfigBinaryReader(bytes))
             {
@@ -109,10 +138,10 @@ namespace GameSync.Config
                 }
                 reader.EnsureEnd();
                 var all = Array.AsReadOnly(rows);
-                lock (_sync)
+                lock (m_Sync)
                 {
-                    _index = index;
-                    _all = all;
+                    m_Index = index;
+                    m_All = all;
                 }
             }
         }
@@ -120,30 +149,30 @@ namespace GameSync.Config
         /// <summary>按 Key 获取配置；未找到时抛出 KeyNotFoundException。</summary>
         public static ArtResourceConfig Get(string key)
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _index[key];
+                return m_Index[key];
             }
         }
 
         /// <summary>按 Key 查询，返回是否找到；找不到时配置为 null。</summary>
         public static bool TryGet(string key, out ArtResourceConfig config)
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _index.TryGetValue(key, out config);
+                return m_Index.TryGetValue(key, out config);
             }
         }
 
         /// <summary>获取全部配置的只读列表，顺序与导出的主键排序一致。</summary>
         public static IReadOnlyList<ArtResourceConfig> GetAll()
         {
-            lock (_sync)
+            lock (m_Sync)
             {
                 EnsureLoaded();
-                return _all;
+                return m_All;
             }
         }
 

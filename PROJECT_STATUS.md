@@ -96,3 +96,7 @@
 - 2026-10-15：ConfigBinaryReader 移至 shared/Runtime/Config，保留原 .meta/GUID，双端共用；移除导表中的解码器生成及模板副本。重新导出 133 条配置，服务端与 Unity 兼容编译通过。
 
 - 2026-10-15：配置生成目录调整为 shared/Runtime/Gen/Client/Config 与 shared/Runtime/Gen/Server/Config，为后续协议生成预留同级目录；移动既有脚本时保留 .meta/GUID，导表默认路径同步调整。
+
+- 2026-10-15：在 feat_common_logging 从 main 独立开发共享日志，新增 shared/Runtime/Logging 的 Log、LogLevel、ILogSink、ConsoleLogSink；默认 Debug，支持最低级别过滤、关闭、异常堆栈及线程安全后端配置。客户端 UnityLogSink 在运行前自动注册并每次重设日志级别；共享库无 Unity 依赖。共享 netstandard2.1 构建与真实 Unity API 的 C#7.3 兼容编译通过，均为 0 警告、0 错误；构建产物放在包外 .build/logging，未新增测试代码，未验证实际 Console 输出。未将其他未合并公共功能分支直接混入本分支。
+
+- 2026-10-15：按边界捕获与兜底规则改版：代码技能新增异常处理约定；配置生成 Load/LoadFromFile 及手写 LoadAll 返回 bool，底层校验异常统一捕获、记录一次 Error，保留旧快照，失败停止后续加载。资源入口捕获读取异常并返回 null，缺失 ID 使用 TryGet，首次配置失败不继续读取；取消不记错误。日志后端失败回退标准错误流，避免故障递归。生成器及模板同步更新；共享库、Unity API 兼容编译通过，实际失败路径运行尚未验证。
