@@ -15,7 +15,7 @@
 - View/Camera/CameraView：按观察区域与相机宽高比调整正交画面，Dispose 恢复接管前设置。
 - View/UI：GameHudView 创建Screen Space Camera Canvas、CanvasScaler、状态面板和共享血条容器；HealthBarView 使用 Image 和 RectTransform 显示血量，按指定世界相机投影跟随单位。UiElementFactory 只负责简单 uGUI 节点构造。已移除 OnGUI，没有引入额外 UI 框架。
 
-UI 根节点 GameUI 与独立 UICamera 在运行时创建于 Bootstrap 所属场景根级，退出时整体销毁；无需新增 Inspector 引用。UI 相机仅渲染 UI 层，以 Depth 清屏并在游戏相机之后渲染；游戏相机排除 UI 层，退出时恢复原掩码。Canvas.worldCamera 显式绑定 UICamera，planeDistance 为 10，UI 相机不添加 AudioListener。当前节点由代码构造，尚未制作 UI Prefab。固定横屏设计，CanvasScaler 采用 Scale With Screen Size、1920×1080 参考分辨率、Match Width Or Height，Match=1（按高度匹配）。UI 等比缩放，横向空间通过锚点适配；超宽屏扩大横向布局，不强制拉伸到 16:9。PlayerSettings 禁止两个竖屏旋转方向，保留左右横屏；桌面与 Web 默认尺寸为 1920×1080，Game 视图仍需选择横屏预设。HUD 使用 uGUI Text 与 Unity 内置 LegacyRuntime 字体，未引入中文字体资源或 TMP 字体资产；中文显示需在目标环境实际检查。当前全为展示组件，关闭 raycastTarget，不创建 EventSystem 或 GraphicRaycaster。
+UI 根节点 GameUI 与独立 UICamera 在运行时创建于 Bootstrap 所属场景根级，退出时整体销毁；无需新增 Inspector 引用。UI 相机仅渲染 UI 层，以 Depth 清屏并在游戏相机之后渲染；游戏相机排除 UI 层，退出时恢复原掩码。Canvas.worldCamera 显式绑定 UICamera，planeDistance 为 10，UI 相机不添加 AudioListener。当前节点由代码构造，尚未制作 UI Prefab。固定横屏设计，CanvasScaler 采用 Scale With Screen Size、1920×1080 参考分辨率、Match Width Or Height，Match=1（按高度匹配）。UI 等比缩放，横向空间通过锚点适配；超宽屏扩大横向布局，不强制拉伸到 16:9。PlayerSettings 禁止两个竖屏旋转方向，保留左右横屏；桌面与 Web 默认尺寸为 1920×1080，Game 视图仍需选择横屏预设。HUD 使用 uGUI Text 与 Unity 内置 LegacyRuntime 字体，未引入中文字体资源或 TMP 字体资产；中文显示需在目标环境实际检查。HUD 本身是展示组件，关闭 raycastTarget；后续触屏操作区启用时为共享 Canvas 添加 GraphicRaycaster，EventSystem 与 UI 动作在 GameMain 场景的 Inspector 中预先配置，详见 INPUT.md。
 
 血条首次收到有效血量时才创建，位于共享 HealthBars 容器下；箭矢不会创建无用血条。外部 SetHealth 接口不变，UnitViewFactory 通过构造函数接收血条容器并传给 UnitView。填充宽度由锚点表示，先通过游戏相机转屏幕坐标，再通过 UI 相机转 Canvas 局部坐标，在 Canvas 缩放后仍可正确定位；血条在相机更新之后执行投影。单位隐藏、投影到屏幕外或相机背面时隐藏血条，单位销毁时释放对应 UI。
 

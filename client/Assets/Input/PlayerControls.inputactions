@@ -1,0 +1,293 @@
+{
+  "controlSchemes": [
+    {
+      "bindingGroup": "KeyboardMouse",
+      "devices": [
+        {
+          "isOptional": false,
+          "isOR": false,
+          "devicePath": "<Keyboard>"
+        },
+        {
+          "isOptional": false,
+          "isOR": false,
+          "devicePath": "<Mouse>"
+        }
+      ],
+      "name": "KeyboardMouse"
+    },
+    {
+      "bindingGroup": "Touch",
+      "devices": [
+        {
+          "isOptional": false,
+          "isOR": false,
+          "devicePath": "<Touchscreen>"
+        }
+      ],
+      "name": "Touch"
+    }
+  ],
+  "maps": [
+    {
+      "id": "6942cd97-2a2c-4b5b-8e54-f66dc964f615",
+      "name": "Gameplay",
+      "actions": [
+        {
+          "type": "Value",
+          "processors": "",
+          "initialStateCheck": true,
+          "id": "a112750a-0e0d-41fe-a54d-a34ac09cbb21",
+          "expectedControlType": "Vector2",
+          "interactions": "",
+          "name": "Move"
+        },
+        {
+          "type": "Value",
+          "processors": "",
+          "initialStateCheck": true,
+          "id": "b597355f-001c-412e-9d2e-a680d70a46d6",
+          "expectedControlType": "Vector2",
+          "interactions": "",
+          "name": "Point"
+        },
+        {
+          "type": "Button",
+          "processors": "",
+          "initialStateCheck": false,
+          "id": "763810ad-2569-494e-b7bf-40cc0670c44a",
+          "expectedControlType": "Button",
+          "interactions": "",
+          "name": "Attack"
+        }
+      ],
+      "bindings": [
+        {
+          "processors": "",
+          "name": "方向",
+          "isComposite": true,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": false,
+          "path": "2DVector",
+          "id": "7f071556-bc93-413c-aed7-21902512e79d"
+        },
+        {
+          "processors": "",
+          "name": "up",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/w",
+          "id": "8f6d090a-c457-4a48-94bf-068bd92f2a2f"
+        },
+        {
+          "processors": "",
+          "name": "down",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/s",
+          "id": "3479610c-d11a-4df2-a876-0887dc8200d7"
+        },
+        {
+          "processors": "",
+          "name": "left",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/a",
+          "id": "49f65d5c-4a48-48cf-b17e-2b267bfe92d8"
+        },
+        {
+          "processors": "",
+          "name": "right",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/d",
+          "id": "9253cc5b-29d5-42aa-8420-1fc7081a6db5"
+        },
+        {
+          "processors": "",
+          "name": "方向",
+          "isComposite": true,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": false,
+          "path": "2DVector",
+          "id": "e9bbdf33-2870-40f6-a6e6-75e2d9623e69"
+        },
+        {
+          "processors": "",
+          "name": "up",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/upArrow",
+          "id": "6df333c8-39be-4144-a9e5-2f1a321ceda3"
+        },
+        {
+          "processors": "",
+          "name": "down",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/downArrow",
+          "id": "d06e9309-9db0-4ec0-b9a6-f3b94ebb7a72"
+        },
+        {
+          "processors": "",
+          "name": "left",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/leftArrow",
+          "id": "ccc258d1-1bf8-4ea5-8b1d-f7e5b6804855"
+        },
+        {
+          "processors": "",
+          "name": "right",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": true,
+          "path": "<Keyboard>/rightArrow",
+          "id": "e70d23e8-3e77-4896-87a7-475bbac5a924"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "Touch",
+          "interactions": "",
+          "action": "Move",
+          "isPartOfComposite": false,
+          "path": "<Gamepad>{Touch}/leftStick",
+          "id": "23e0a8a7-df67-4a36-9dc8-4596d150f448"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Point",
+          "isPartOfComposite": false,
+          "path": "<Mouse>/position",
+          "id": "d98d9c03-5b55-461c-ab9f-ce44d7edf6e5"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Attack",
+          "isPartOfComposite": false,
+          "path": "<Mouse>/leftButton",
+          "id": "f3f8e58f-9471-489e-8d91-53df51a59c1f"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "Touch",
+          "interactions": "",
+          "action": "Attack",
+          "isPartOfComposite": false,
+          "path": "<Gamepad>{Touch}/buttonSouth",
+          "id": "49e0f21f-7000-4aeb-8f90-63eb18b08f76"
+        }
+      ]
+    },
+    {
+      "id": "798d9a64-7ca2-4add-8071-e02828bd7106",
+      "name": "UI",
+      "actions": [
+        {
+          "type": "PassThrough",
+          "processors": "",
+          "initialStateCheck": false,
+          "id": "4b3dfe34-0830-47cd-83d1-000a8110a91b",
+          "expectedControlType": "Vector2",
+          "interactions": "",
+          "name": "Point"
+        },
+        {
+          "type": "PassThrough",
+          "processors": "",
+          "initialStateCheck": false,
+          "id": "42e9375d-1cab-4ed0-b03a-4da775428b99",
+          "expectedControlType": "Button",
+          "interactions": "",
+          "name": "Click"
+        }
+      ],
+      "bindings": [
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Point",
+          "isPartOfComposite": false,
+          "path": "<Mouse>/position",
+          "id": "32bfb9df-1c3c-4a4f-b5e9-6e28c9211329"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "Touch",
+          "interactions": "",
+          "action": "Point",
+          "isPartOfComposite": false,
+          "path": "<Touchscreen>/touch*/position",
+          "id": "2d31fc45-4b2e-4e5c-9ba4-2b0e5683a4f0"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "KeyboardMouse",
+          "interactions": "",
+          "action": "Click",
+          "isPartOfComposite": false,
+          "path": "<Mouse>/leftButton",
+          "id": "ddfac4ba-e933-40dc-874b-da819ea4dfee"
+        },
+        {
+          "processors": "",
+          "name": "",
+          "isComposite": false,
+          "groups": "Touch",
+          "interactions": "",
+          "action": "Click",
+          "isPartOfComposite": false,
+          "path": "<Touchscreen>/touch*/press",
+          "id": "fe4418bd-1e37-4cd3-a383-730fee8619ff"
+        }
+      ]
+    }
+  ],
+  "name": "PlayerControls"
+}
