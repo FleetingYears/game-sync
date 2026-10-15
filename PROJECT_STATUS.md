@@ -1,6 +1,6 @@
 # 项目进度
 
-最后更新：2026-10-15。长期开发约定见 AGENTS.md。
+最后更新：2026-10-16。长期开发约定见 AGENTS.md。
 
 ## 已完成
 
@@ -63,7 +63,7 @@
 - 尚未建立共享协议/模拟类库或确定性数学库。
 - 已明确公共、状态同步与帧同步三条功能分支流；Shared/StateSync/FrameSync 的代码目录和程序集隔离尚未实施，具体约定见 AGENTS.md。
 - 尚无数学、协议或模拟自动化测试；同步工具已在临时 Git 仓库执行集成场景验证，未验证联网游戏运行和跨平台确定性。
-- 素材、场景、配置导表、客户端分层和共享日志已包含在本地 main；公共表现与网格调试工具位于 feat_common_presentation，尚未合并或推送。远端进度以 Git 为准。
+- 公共表现与网格调试工具由 feat_common_presentation 提供，键鼠/触屏输入由 feat_common_input_system 提供；功能已实现，具体提交、main 集成及两个 dev 的远端同步状态以 Git 为准。
 
 ## 后续计划
 
@@ -77,6 +77,10 @@
 
 ## 公共表现与同步方案的边界
 
+- 2026-10-16：用户 Play 截图显示输入预览 HUD 已更新瞄准和攻击按下计数；桌面触屏预览开关默认关闭，截图没有触屏按钮。该结果仅确认键鼠预览链路可运行，不代表触屏、Console、焦点/暂停或真机验证通过。
+- 2026-10-16：按用户要求删除触屏代码中创建/查找事件系统、复制 UI 动作资产与运行时绑定的流程；GameMain 的 EventSystem 和 InputSystemUIInputModule 改为固定 Inspector 配置，绑定 PlayerControls 及 UI/Point、UI/Click 引用资产。代码技能明确稳定组件与引用优先在场景/Prefab 配置；场景重新加载后的 Inspector 与 Play 待验证。
+- 2026-10-16：代码技能补充函数契约、参数/返回值与关键流程原因的注释规范，参考 Microsoft C# 文档约定及 Google 文档最佳实践，并同步本机技能副本。按新规则补充输入读取器、输入状态、触屏 UI 和应用接入处的注释，解释动作配置、回调、虚拟设备、短按缓存及坐标转换；本次未改变输入行为。开启 XML 文档生成的客户端兼容编译通过，0 警告、0 错误；不替代 Unity 运行验证。
+- 2026-10-16：接入 Input System 1.7.0，动作绑定由 Assets/Input/PlayerControls.inputactions 配置。键鼠和触屏输出统一移动、瞄准及攻击意图；触屏使用内置 OnScreenStick/OnScreenButton 和 InputSystemUIInputModule。增加安全区适配、桌面触屏预览与失焦/暂停清理；HUD 显示输入，无移动/攻击模拟。客户端 Unity API 兼容编译和服务端构建通过，0 警告、0 错误；Unity 包解析、Play 与手机真机尚未验证，Player 资源后端仍缺失。配置、分工和验收见 docs/status/02-local-demo/INPUT.md。
 - 2026-10-15：用户提供 1920×1080、Game 视图 Scale=0.5 的运行截图，确认两个角色、血条与完整中文 HUD 可见；此前 Scale=0.59 的文字截断来自预览窗口裁切。截图不代表 Console、其他横屏比例、退出清理或 Editor 网格交互已验证。
 - 2026-10-15：新增 Editor 工具 GameSync/调试/地图网格。读取场景 GameMainBootstrap 的宽高，按 XY 世界坐标绘制格线、原点轴、悬停格子的列行号和半格中心坐标，可切换全部格心标签及格线颜色。仅在工具窗口打开时向 Scene 视图绘制，不修改场景或参与模拟；Unity Editor API 兼容编译通过（0 警告、0 错误），实际绘制与鼠标交互待验证。
 - 2026-10-15：UI 改为独立 UICamera 渲染的 Screen Space Camera，显式设置 Canvas.worldCamera；游戏/UI 相机按 UI 层隔离，退出恢复原游戏相机掩码并销毁 UI 相机。CanvasScaler 参考分辨率改为 1920×1080，按高度匹配，PlayerSettings 关闭竖屏方向，Web 默认尺寸同步为 1920×1080。血条屏幕坐标转换改用 UI 相机。Unity/uGUI 兼容编译通过，0 警告、0 错误；实际 Play、横屏窗口适配及设备旋转待验证。

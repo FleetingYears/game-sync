@@ -12,6 +12,7 @@
 
 ## 层级与相机
 
+- EventSystem：场景固定节点，挂载 EventSystem 与 InputSystemUIInputModule；Inspector 中绑定 PlayerControls、UI/Point、UI/Click，运行时无需创建或查找。动作引用见 Assets/Input/UIPoint.asset、UIClick.asset。
 - 运行时新增场景根级 GameUI Canvas 和 UICamera：Screen Space Camera、仅渲染 UI 层、Depth 清屏，游戏相机排除 UI 层；退出销毁运行时 UI 并恢复相机掩码。UI 按 1920×1080 横屏参考分辨率、CanvasScaler Match Height=1 适配。
 - MapRoot/Dungeon：640 个 SpriteRenderer，Order 0。
 - MapRoot/Objects：40 个静态摆设 SpriteRenderer，Order 10。
@@ -28,6 +29,7 @@
 
 ## 当前边界与验证
 
+2026-10-16：GameMainBootstrap 新增 PlayerControls 输入资产引用与 Preview Touch Controls 开关。当前键鼠输入、触屏控件接入只用于 HUD 操作意图预览，尚不控制角色移动或射击；操作与首次导入步骤见 [输入说明](INPUT.md)。
 原官方示例中人物、怪物和矿车曾作为静态图片；当前编辑状态 Units 为空，运行时创建公共表现预览。已有动画播放及血条显示接口，没有控制、移动、射击、生命值或网络逻辑。原地图未提供碰撞属性，尚未定义阻挡或逻辑出生点；后续玩法阶段单独定义。
 
 导入时核对 697 个非空格；移除 Units 后保留 680 个静态 SpriteRenderer，当前仅有 Dungeon/Objects 静态层、翻转/旋转规则、场景 fileID 和资源引用，并检查按原图拼接的离线预览。离线预览不是 Unity 截图；Unity 导入、Console 和 Game 画面尚未实际验证。需在已打开的 Unity 中打开 GameMain 确认，不启动第二个实例。
