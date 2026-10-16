@@ -1,0 +1,10 @@
+{
+  "name": "com.gamesync.transport",
+  "version": "0.1.0",
+  "displayName": "GameSync Transport",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.gamesync.shared": "0.1.0",
+    "com.revenantx.litenetlib": "2.1.4"
+  }
+}

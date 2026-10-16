@@ -1,0 +1,7 @@
+{
+  "name": "GameSync.Transport",
+  "rootNamespace": "GameSync.Transport",
+  "references": ["GameSync.Shared", "LiteNetLib"],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

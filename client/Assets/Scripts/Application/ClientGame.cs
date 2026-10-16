@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using GameSync.Config;
 using GameSync.Input;
+using GameSync.Logic.Network;
 using GameSync.View.Unit;
 using GameSync.View.Map;
 using GameSync.View.Camera;
@@ -40,6 +41,14 @@ namespace GameSync.Application
         private float m_NextInputDisplayTime;
         /// <summary>场景绑定的输入动作配置，不直接启用原资产。</summary>
         private readonly InputActionAsset m_InputActions;
+        /// <summary>是否在表现预览中启动 N1 会话诊断。</summary>
+        private readonly bool m_EnableNetworkSession;
+        /// <summary>Inspector 配置的局域网服务端地址。</summary>
+        private readonly string m_ServerHost;
+        /// <summary>Inspector 配置的局域网 UDP 端口。</summary>
+        private readonly int m_ServerPort;
+        /// <summary>由应用流程持有和释放的 N1 客户端连接。</summary>
+        private SessionClient m_NetworkSession;
 
         /// <summary>当前应用拥有的单位外观管理器，生命周期随应用一起结束。</summary>
         public UnitViewManager UnitViews { get { return m_UnitViews; } }
@@ -52,7 +61,11 @@ namespace GameSync.Application
         /// <param name="hud">已初始化的 HUD，提供血条容器及输入预览文字，所有权属于 Bootstrap。</param>
         /// <param name="inputActions">Inspector 绑定的输入配置原资产，运行时由输入模块复制使用，不可为空。</param>
         /// <param name="previewTouch">true 时桌面也创建触屏控件；false 时仅移动平台自动创建。</param>
-        public ClientGame(MapView map, Camera camera, GameHudView hud, InputActionAsset inputActions, bool previewTouch = false)
+        /// <param name="enableNetworkSession">true 时启动 N1 局域网会话诊断。</param>
+        /// <param name="serverHost">N1 服务端地址；诊断关闭时不使用。</param>
+        /// <param name="serverPort">N1 服务端 UDP 端口；诊断关闭时不使用。</param>
+        public ClientGame(MapView map, Camera camera, GameHudView hud, InputActionAsset inputActions,
+            bool previewTouch = false, bool enableNetworkSession = false, string serverHost = "127.0.0.1", int serverPort = 9050)
         {
             if (map == null) throw new ArgumentNullException(nameof(map));
             if (hud == null) throw new ArgumentNullException(nameof(hud));
@@ -62,6 +75,9 @@ namespace GameSync.Application
             m_Camera = camera;
             m_Hud = hud;
             m_PreviewTouch = previewTouch;
+            m_EnableNetworkSession = enableNetworkSession;
+            m_ServerHost = serverHost;
+            m_ServerPort = serverPort;
             m_UnitViews = new UnitViewManager(map.UnitsRoot, new UnitViewFactory(hud.HealthBarRoot));
         }
 
@@ -94,6 +110,11 @@ namespace GameSync.Application
             m_Input = new PlayerInputReader(m_InputActions, m_TouchInput);
             // 初始化等待期间也可能收到失焦/暂停事件，使用缓存状态而非无条件启用输入。
             m_Input.SetActive(m_InputActive);
+            if (m_EnableNetworkSession)
+            {
+                m_NetworkSession = new SessionClient();
+                m_NetworkSession.Connect(m_ServerHost, m_ServerPort);
+            }
             m_Hud.SetStatus("输入已接入：WASD/方向键移动意图，鼠标瞄准、左键攻击；尚未接入模拟");
             return true;
         }
@@ -104,6 +125,8 @@ namespace GameSync.Application
             if (m_Disposed) return;
             // 先刷新相机，再用它计算鼠标世界方向，避免使用上一次显示区域进行投影。
             m_CameraView.Refresh();
+            // 网络轮询固定在 Unity 主线程，且由适配器限制本次处理的包与事件数量。
+            m_NetworkSession?.Poll();
             if (m_Input == null) return;
             // 这里只做输入预览，用明确的展示初始坐标作为瞄准原点。
             // Consume 会清空攻击边沿；接入模拟后应由固定 Tick 适配器决定消费时机并提供逻辑位置。
@@ -113,9 +136,10 @@ namespace GameSync.Application
             // 使用不受 timeScale 影响的显示时间，便于暂停模拟时继续观察输入。
             if (Time.unscaledTime < m_NextInputDisplayTime) return;
             m_NextInputDisplayTime = Time.unscaledTime + 0.1f;
-            m_Hud.SetStatus(string.Format("输入预览（未接模拟） 移动 {0:F2},{1:F2}  瞄准 {2:F2},{3:F2}  攻击 {4}  按下 {5}",
+            m_Hud.SetStatus(string.Format("输入预览（未接模拟） 移动 {0:F2},{1:F2}  瞄准 {2:F2},{3:F2}  攻击 {4}  按下 {5}{6}",
                 CurrentInput.Move.x, CurrentInput.Move.y, CurrentInput.Aim.x, CurrentInput.Aim.y,
-                CurrentInput.AttackHeld ? "按住" : "松开", m_AttackCount));
+                CurrentInput.AttackHeld ? "按住" : "松开", m_AttackCount,
+                m_NetworkSession == null ? string.Empty : "  网络：" + m_NetworkSession.Status));
         }
 
         /// <summary>同步焦点/暂停状态，兼容输入读取器尚未完成初始化的时段。</summary>
@@ -135,6 +159,7 @@ namespace GameSync.Application
             m_Disposed = true;
             // 先停止动作回调，再销毁触屏控件和外观，避免清理期间继续产生玩法输入。
             m_Input?.Dispose();
+            m_NetworkSession?.Dispose();
             CurrentInput = default;
             if (m_TouchInput != null)
             {

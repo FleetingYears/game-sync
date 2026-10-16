@@ -24,6 +24,12 @@ namespace GameSync
         [SerializeField] private bool m_PreviewTouchControls = false;
         /// <summary>由 Input Actions 编辑器维护的输入配置。</summary>
         [SerializeField] private InputActionAsset m_InputActions = null;
+        /// <summary>启用 N1 局域网会话诊断；默认关闭以保留当前纯表现预览。</summary>
+        [SerializeField] private bool m_EnableNetworkSession = false;
+        /// <summary>N1 局域网服务端地址，可在 Inspector 修改。</summary>
+        [SerializeField] private string m_ServerHost = "127.0.0.1";
+        /// <summary>N1 局域网服务端 UDP 端口。</summary>
+        [SerializeField] private int m_ServerPort = 9050;
         /// <summary>应用是否拥有输入焦点。</summary>
         private bool m_HasFocus = true;
         /// <summary>应用是否进入暂停状态。</summary>
@@ -41,7 +47,8 @@ namespace GameSync
                 Camera sceneCamera = ResolveCamera();
                 var map = new MapView(transform, m_Units, m_MapWidth, m_MapHeight);
                 m_Hud = GameHudView.Create(transform, sceneCamera);
-                m_Game = new ClientGame(map, sceneCamera, m_Hud, m_InputActions, m_PreviewTouchControls);
+                m_Game = new ClientGame(map, sceneCamera, m_Hud, m_InputActions, m_PreviewTouchControls,
+                    m_EnableNetworkSession, m_ServerHost, m_ServerPort);
                 // 初始化前收到的焦点/暂停通知也必须生效，不能默认从后台开始采集输入。
                 m_Game.SetInputActive(m_HasFocus && !m_IsPaused);
                 if (!await m_Game.StartAsync())

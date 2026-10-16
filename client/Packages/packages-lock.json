@@ -6,6 +6,15 @@
       "source": "local",
       "dependencies": {}
     },
+    "com.gamesync.transport": {
+      "version": "file:../../transport",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.gamesync.shared": "0.1.0",
+        "com.revenantx.litenetlib": "2.1.4"
+      }
+    },
     "com.revenantx.litenetlib": {
       "version": "2.1.4",
       "depth": 0,

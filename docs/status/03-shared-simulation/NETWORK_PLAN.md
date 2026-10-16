@@ -1,6 +1,6 @@
 # 公共网络层实施计划
 
-状态：N0 Windows 本机门槛已完成；独立 Player/手机与 N1～N5 待实施。最后更新：2026-10-16。
+状态：N0 与 N1 Windows 本机门槛已完成；独立 Player/手机与 N2～N5 待实施。最后更新：2026-10-16。
 
 ## 1. 目标与已确定的方向
 
@@ -128,7 +128,7 @@ MTU 预算区分 IP/UDP 头、库头、加密标签与应用负载。以约 1200
 
 ## 10. 阶段与交付门槛
 
-N0 的 Windows Unity Editor/服务端工程探针已通过；N1～N5 未开始。下列为验收目标，实际记录见 [N0 依赖锁定与约束](NETWORK_DEPENDENCIES.md)。阶段按可独立复核的功能分支推进，公共项从 main 建 feat_common_*，合回 main 后再同步两个 dev；方案适配分别从对应 dev 建分支。
+N0 和 N1 的 Windows Unity Editor/服务端工程探针已通过；N2～N5 未开始。实际记录见 [N0 依赖锁定与约束](NETWORK_DEPENDENCIES.md)及 [N1 最小会话与启动工具](NETWORK_SESSION.md)。阶段按可独立复核的功能分支推进，公共项从 main 建 feat_common_*，合回 main 后再同步两个 dev；方案适配分别从对应 dev 建分支。
 
 ### N0：确定传输库与约束
 

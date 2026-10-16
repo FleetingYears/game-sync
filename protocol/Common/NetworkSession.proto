@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package gamesync.protocol;
+option csharp_namespace = "GameSync.Protocol.Generated";
+
+// N1 会话探针格式；N2 再定义正式业务封套与类型注册。
+message NetworkSessionPacket {
+  oneof body {
+    SessionHello hello = 1;
+    SessionHelloResult hello_result = 2;
+    SessionEcho echo = 3;
+  }
+}
+
+message SessionHello {
+  uint32 major_version = 1;
+}
+
+message SessionHelloResult {
+  bool accepted = 1;
+  uint32 major_version = 2;
+  uint32 session_id = 3;
+  string reason = 4;
+}
+
+message SessionEcho {
+  uint32 request_id = 1;
+  bytes payload = 2;
+}

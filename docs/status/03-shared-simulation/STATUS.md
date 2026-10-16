@@ -1,6 +1,6 @@
 # 计划 3：共享协议、公共网络与独立模拟层
 
-状态：进行中（共享基础已建立，N0 Windows 本机 Unity/服务端收发已通过）。最后更新：2026-10-16。
+状态：进行中（共享基础、N0 已建立，N1 双客户端本机收发已通过）。最后更新：2026-10-16。
 
 ## 目标
 
@@ -10,7 +10,7 @@
 
 shared 工程已存在，使用 netstandard2.1/C# 7.3；Unity 通过本地源码包引用，服务端通过 ProjectReference 引用。当前共享了配置、单例与日志基础，但尚无网络协议、连接、房间或游戏模拟。此前“尚无共享类库”的描述已过时。
 
-已编写 [公共网络层实施计划](NETWORK_PLAN.md)。N0 已按 [依赖锁定记录](NETWORK_DEPENDENCIES.md) 固定 LiteNetLib 2.1.4 和 Protobuf 3.36.2，在 Windows Unity Editor 与实际服务端工程之间完成同机收发。独立 Player 与现有手机兼容性仍待验证；N1 连接生命周期、正式协议和房间尚未实现。
+已编写 [公共网络层实施计划](NETWORK_PLAN.md)。N0 已按 [依赖锁定记录](NETWORK_DEPENDENCIES.md) 固定 LiteNetLib 2.1.4 和 Protobuf 3.36.2。N1 已建立 [最小会话与启动工具](NETWORK_SESSION.md)，Windows Unity Editor 与正式服务端完成两个独立连接的握手和双通道 Echo，Editor 启动菜单也已实际启动正式服务端。独立 Player 与手机兼容性仍待验证；N2 正式业务协议和房间尚未实现。
 
 ## 依赖与边界
 
@@ -24,7 +24,7 @@ shared 工程已存在，使用 netstandard2.1/C# 7.3；Unity 通过本地源码
 - [x] 建立 Unity 与服务端共用的纯 C# 类库组织方式
 - [x] 编写采用成熟网络库与 Protobuf、首轮面向同 Wi-Fi 的公共网络实施计划
 - [x] N0：验证传输库与 Protobuf 工具链、锁定版本/许可证，完成 Windows Unity Editor/服务端探针；设备实测列入 N3
-- [ ] N1：薄封装库的收发/连接能力，接入握手、超时与清理
+- [x] N1：薄封装库的收发/连接能力，接入握手、超时与清理；Editor 启动菜单复测与设备验证另记
 - [ ] N2：通过 .proto 生成业务消息，接入边界校验、会话分配与基础双人房间
 - [ ] N3：验证 Windows 服务端和同 Wi-Fi 至少两台实际客户端设备、暂停与网络断开
 - [ ] N4：验证弱网、队列/带宽预算、故障恢复及可观测性
@@ -44,6 +44,7 @@ shared 工程已存在，使用 netstandard2.1/C# 7.3；Unity 通过本地源码
 - 2026-10-16：按用户要求将计划收敛为网络库收发、Protobuf 编解码、Windows 本地服务端和同 Wi-Fi 多设备对局；公网和 Linux 后置。本次仅修改计划，未安装依赖或执行联网验证。
 - 2026-10-16：核对现有 shared 工程和两端引用，修正旧状态描述；仅完成网络规划及关联计划更新。未安装网络依赖，未实现或运行任何网络代码。
 - 2026-10-16：N0 采用 LiteNetLib 官方 OpenUPM 2.1.4、UnityNuGet 转换的 Google.Protobuf UPM 3.36.2，以及双端 NuGet 和固定 protoc 3.36.2；生成共享探针消息。Windows Unity Editor 与实际 server 工程完成可靠有序与不可靠按序消息往返；UPM 包锁已生成，Console 无编译错误，shared、server 构建均为 0 警告、0 错误。独立 Player 和实际设备未验证；详见依赖锁定记录。
+- 2026-10-16：N1 正式服务端与 Unity Editor 两个独立客户端完成版本握手及双通道 Protobuf Echo；服务端构建、临时异常路径自检通过。Editor 启动菜单的 `Debug` 歧义和 Windows PowerShell 5 编码问题已修复；用户截图确认菜单成功启动并持续监听 UDP 9050。详见 N1 会话记录。
 
 ## 维护
 
