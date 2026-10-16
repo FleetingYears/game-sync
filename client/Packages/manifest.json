@@ -39,6 +39,15 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0",
-    "com.gamesync.shared": "file:../../shared"
-  }
+    "com.gamesync.shared": "file:../../shared",
+    "com.revenantx.litenetlib": "2.1.4",
+    "org.nuget.google.protobuf": "3.36.2"
+  },
+  "scopedRegistries": [
+    {
+      "name": "OpenUPM",
+      "url": "https://package.openupm.com",
+      "scopes": ["com.revenantx", "org.nuget"]
+    }
+  ]
 }

@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <ProjectReference Include="../shared/shared.csproj" />
+        <PackageReference Include="LiteNetLib" Version="2.1.4" />
     </ItemGroup>
 
     <ItemGroup>

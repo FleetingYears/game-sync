@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gamesync.protocol;
+option csharp_namespace = "GameSync.Protocol.Generated";
+
+// N0 用于核对双端使用同一份生成消息；正式会话协议在 N2 定义。
+message NetworkProbe {
+  uint32 sequence = 1;
+  string text = 2;
+}

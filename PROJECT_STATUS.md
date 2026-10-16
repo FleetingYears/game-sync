@@ -59,7 +59,7 @@
 - 在 feat_common_dungeon_scene 将仓库外 Kenney Tiny Dungeon 的官方 Tiled sampleMap.tmx 转为 Assets/Scenes/GameMain.unity，并加入 Build Settings。保留原始 32×20 格布局、Dungeon/Objects/Carts 三层、697 个非空格与 62 个翻转/旋转格，复用现有 Sprite/GUID 与图集；仅配置正交相机，不自建大厅、不改原配色、不增加碰撞或出生点。后续按用户要求将人物、怪物和矿车共 17 个单位归入 MapRoot/Units 父节点，地图静态节点保留 Dungeon 与 Objects。已核对转换后的引用和格子变换并检查离线拼接预览，Unity 导入、Console 和运行画面尚待验证；地牢场景已合并到 main 并推送（44ccbad）。
 - server/server.csproj 的目标框架为 net10.0；本机 SDK 为 10.0.402，Microsoft.NETCore.App 运行时为 10.0.13，原 SDK 9.0.300 仍保留。
 - 本机 Rider 为 2026.2.3.1；已核对官方 .NET 10 支持说明，尚未在 Rider 内实际构建或调试。
-- 尚未实现网络连接、消息协议、房间管理、固定 Tick、移动战斗、状态同步、帧同步、预测、校正或回滚。
+- N0 已建立固定版本依赖、共享 Protobuf 探针消息和 Unity Editor/实际 server 工程的同机收发；正式客户端/服务端连接、业务协议、房间管理、固定 Tick、移动战斗及两种同步方案仍未实现。
 - shared 共用类库已建立，配置、日志和单例已接入双端；尚未实现共享游戏协议、独立模拟或确定性数学库。
 - 已明确公共、状态同步与帧同步三条功能分支流，并建立方案目录骨架；方案专属程序集隔离尚未实施，具体约定见 AGENTS.md。
 - 尚无数学、协议或模拟自动化测试；同步工具已在临时 Git 仓库执行集成场景验证，未验证联网游戏运行和跨平台确定性。
@@ -69,7 +69,7 @@
 
 1. 已完成：核对 SDK 并升级服务端目标框架，构建与运行确认（验证记录见子计划）。
 2. 搭建 2D 双人俯视角 Demo 的本地原型，先实现移动，再加入子弹、生命值、死亡重生；此步骤不代表已联网。
-3. 建立客户端/服务端共享的数据结构、协议和独立模拟层。公共网络按 [网络层实施计划](docs/status/03-shared-simulation/NETWORK_PLAN.md) 推进：Windows 本地 C# 服务端 + 成熟 UDP 库负责收发 + Protobuf 生成业务消息编解码，首轮验收同 Wi-Fi 下至少两台实际设备对局；公网部署、Linux 和无设备平台后置。库及工具链版本尚未锁定，网络代码未开始。
+3. 建立客户端/服务端共享的数据结构、协议和独立模拟层。公共网络按 [网络层实施计划](docs/status/03-shared-simulation/NETWORK_PLAN.md) 推进：LiteNetLib 2.1.4 + Protobuf 3.36.2 已锁定，N0 的 Windows Unity Editor/实际 server 工程同机收发通过；独立 Player 和真机待验证。首轮目标仍是同 Wi-Fi 至少两台实际设备对局；公网部署、Linux 和无设备平台后置。
 4. 实现整数/定点数数学，明确精度、舍入、溢出规则及所需数学函数；先验证边界和可重复性，并让帧同步模拟使用该数学实现。
 5. 实现状态同步：固定 Tick、输入上传、权威状态广播、插值，随后加入预测和校正。
 6. 实现帧同步：输入组帧、确定性模拟、录制回放、按帧状态哈希；随后按需要加入预测和回滚。
@@ -103,7 +103,7 @@
 - 1. [服务端框架升级](docs/status/01-server-framework/STATUS.md)
 - 2. [2D 双人 Demo 本地原型](docs/status/02-local-demo/STATUS.md)
 - 3. [共享协议与独立模拟层](docs/status/03-shared-simulation/STATUS.md)
-- 公共网络细化：[商业实时对战原则下的网络层计划](docs/status/03-shared-simulation/NETWORK_PLAN.md)，包含 N0～N5 的依赖、职责和验收门槛；目前仅有规划。
+- 公共网络细化：[商业实时对战原则下的网络层计划](docs/status/03-shared-simulation/NETWORK_PLAN.md)，包含 N0～N5 的依赖、职责和验收门槛；N0 Windows Unity Editor 与实际服务端工程已完成同机验证。
 - 4. [确定性数学与模拟基础](docs/status/04-deterministic-math/STATUS.md)
 - 5. [状态同步](docs/status/05-state-sync/STATUS.md)
 - 6. [帧同步与回滚](docs/status/06-lockstep/STATUS.md)

@@ -1,6 +1,7 @@
 {
   "name": "GameSync.Shared",
   "rootNamespace": "GameSync",
+  "references": ["Google.Protobuf"],
   "autoReferenced": true,
   "noEngineReferences": true
 }
