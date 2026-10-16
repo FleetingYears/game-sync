@@ -5,6 +5,7 @@
 ## 已完成
 
 - 建立统一 Git 仓库，客户端 client/ 与服务端 server/ 共用仓库。
+- 2026-10-16：新增仓库根目录 `sync.sln`，纳入服务端、共享库、传输层、协议生成工具和本机 Unity 已生成的四个 C# 项目；Rider 使用方法见 `docs/development/RIDER.md`。`dotnet sln sync.sln list` 已确认项目清单；根解决方案 Debug 构建因当前运行中的服务端锁定输出 DLL 而失败，Release 不适用于 Unity 仅生成 Debug 配置的项目，故根解决方案只保留 Debug 配置。尚未在 Rider 内实际确认代码提示；新检出仓库须先由 Unity 生成客户端项目文件。
 - 创建公开 GitHub 仓库：https://github.com/FleetingYears/game-sync，主分支为 main。
 - 已从 main 创建 dev_state_sync 和 dev_frame_sync，本地分支均跟踪对应 GitHub 分支；分支开发与合并规则见 AGENTS.md。
 - 配置 Unity/.NET 忽略规则，保留源码、必要资源和 .meta，排除缓存与编译产物。
