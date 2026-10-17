@@ -117,6 +117,8 @@
 - 验证结果应注明执行方式及结果，未执行的检查不能记为通过。
 - 计划可以随学习进展调整；不要把计划写成已实现能力。
 
+- 2026-10-17：在 `feat_common_logging` 更新共享日志格式，`Log` 通过 CallerFilePath/CallerMemberName 自动附加类名与函数名；Unity、Editor 与服务端输出均显示 `[时间][级别][类.函数] 消息`，Editor 探针和服务端网络日志改用共享入口，Editor 加载时注册 Unity 输出后端。代码技能新增统一日志约定。`dotnet build server/server.csproj --no-restore` 通过（0 警告、0 错误）；Unity 生成的 Editor 项目兼容编译通过（0 错误、6 项既有程序集版本冲突警告）；服务端非法参数输出实测包含 `[Program.Main]`。尚未在 Unity Editor 刷新或检查 Console。
+
 - 2026-10-15：ConfigBinaryReader 移至 shared/Runtime/Config，保留原 .meta/GUID，双端共用；移除导表中的解码器生成及模板副本。重新导出 133 条配置，服务端与 Unity 兼容编译通过。
 
 - 2026-10-15：配置生成目录调整为 shared/Runtime/Gen/Client/Config 与 shared/Runtime/Gen/Server/Config，为后续协议生成预留同级目录；移动既有脚本时保留 .meta/GUID，导表默认路径同步调整。

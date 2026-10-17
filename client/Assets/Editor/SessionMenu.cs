@@ -1,4 +1,5 @@
 using System;
+using GameSync.Logging;
 using GameSync.Logic.Network;
 using UnityEditor;
 using UnityEngine;
@@ -27,7 +28,7 @@ public static class SessionMenu
         for (int i = 0; i < m_Clients.Length; i++)
         {
             if (m_Clients[i].Connect("127.0.0.1", 9050)) continue;
-            Debug.LogError("N1 客户端 " + (i + 1) + " 启动失败：" + m_Clients[i].Status);
+            Log.Error("N1 客户端 " + (i + 1) + " 启动失败：" + m_Clients[i].Status);
             Stop();
             return;
         }
@@ -44,11 +45,11 @@ public static class SessionMenu
         {
             if (m_Clients[0].SessionId == m_Clients[1].SessionId)
             {
-                Debug.LogError("N1 会话编号重复。");
+                Log.Error("N1 会话编号重复。");
                 Stop();
                 return;
             }
-            Debug.Log("N1 双客户端探针通过：两个独立会话均完成版本握手、ReliableOrdered 与 Sequenced Protobuf Echo。");
+            Log.Info("N1 双客户端探针通过：两个独立会话均完成版本握手、ReliableOrdered 与 Sequenced Protobuf Echo。");
             Stop();
             return;
         }
@@ -56,13 +57,13 @@ public static class SessionMenu
         {
             string status = m_Clients[i].Status;
             if (status == "正在连接" || status == "正在握手" || status == "已就绪") continue;
-            Debug.LogError("N1 客户端 " + (i + 1) + " 失败：" + status);
+            Log.Error("N1 客户端 " + (i + 1) + " 失败：" + status);
             Stop();
             return;
         }
         if (EditorApplication.timeSinceStartup >= m_Deadline)
         {
-            Debug.LogError("N1 双客户端探针超时：" + m_Clients[0].Status + " / " + m_Clients[1].Status);
+            Log.Error("N1 双客户端探针超时：" + m_Clients[0].Status + " / " + m_Clients[1].Status);
             Stop();
         }
     }

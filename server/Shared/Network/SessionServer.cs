@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using GameSync.Logging;
 using GameSync.Network;
 using GameSync.Protocol.Generated;
 using GameSync.Transport;
@@ -22,14 +23,14 @@ internal static class SessionServer
         using var transport = new LiteNetTransport(2);
         if (!transport.Listen(port))
         {
-            Console.Error.WriteLine($"N1 服务端无法监听 UDP {port}。");
+            Log.Error($"N1 服务端无法监听 UDP {port}。");
             return 1;
         }
         var sessions = new Dictionary<int, Session>();
         using var cancellation = new CancellationTokenSource();
         ConsoleCancelEventHandler cancelHandler = (_, args) => { args.Cancel = true; cancellation.Cancel(); };
         Console.CancelKeyPress += cancelHandler;
-        Console.WriteLine($"N1 服务端监听 UDP {port}；按 Ctrl+C 停止。");
+        Log.Info($"N1 服务端监听 UDP {port}；按 Ctrl+C 停止。");
         try
         {
             while (!cancellation.IsCancellationRequested)
@@ -39,7 +40,7 @@ internal static class SessionServer
                 {
                     if (Stopwatch.GetTimestamp() > pair.Value.Deadline && !pair.Value.Ready)
                     {
-                        Console.WriteLine($"连接 {pair.Key} 应用握手超时。");
+                        Log.Warning($"连接 {pair.Key} 应用握手超时。");
                         transport.Disconnect(pair.Key);
                         sessions.Remove(pair.Key);
                     }
@@ -50,7 +51,7 @@ internal static class SessionServer
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine("N1 服务端失败：" + exception);
+            Log.Error("N1 服务端失败。", exception);
             return 1;
         }
         finally
@@ -71,13 +72,13 @@ internal static class SessionServer
         if (networkEvent.Kind == NetworkEventKind.Connected)
         {
             sessions[id] = new Session(Stopwatch.GetTimestamp() + (long)(m_HandshakeTimeout.TotalSeconds * Stopwatch.Frequency));
-            Console.WriteLine($"连接 {id} 已建立，等待版本握手。");
+            Log.Info($"连接 {id} 已建立，等待版本握手。");
             return;
         }
         if (networkEvent.Kind == NetworkEventKind.Disconnected || networkEvent.Kind == NetworkEventKind.Rejected)
         {
             sessions.Remove(id);
-            Console.WriteLine($"连接 {id} 已关闭：{networkEvent.Reason}。");
+            Log.Info($"连接 {id} 已关闭：{networkEvent.Reason}。");
             return;
         }
         if (networkEvent.Kind != NetworkEventKind.Data || !sessions.TryGetValue(id, out var session)) return;
@@ -89,7 +90,7 @@ internal static class SessionServer
         }
         catch (InvalidProtocolBufferException)
         {
-            Console.WriteLine($"连接 {id} 消息解析失败，已关闭。");
+            Log.Warning($"连接 {id} 消息解析失败，已关闭。");
             transport.Disconnect(id);
             sessions.Remove(id);
             return;
@@ -119,14 +120,14 @@ internal static class SessionServer
             if (accepted)
             {
                 session.Ready = true;
-                Console.WriteLine($"连接 {id} N1 握手通过，会话 {id}。");
+                Log.Info($"连接 {id} N1 握手通过，会话 {id}。");
             }
             else
             {
                 // 先让拒绝响应进入发送轮询，再在下一次循环关闭连接。
                 session.Rejected = true;
                 session.Deadline = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 10;
-                Console.WriteLine($"连接 {id} 版本不兼容，已拒绝。");
+                Log.Warning($"连接 {id} 版本不兼容，已拒绝。");
             }
             return;
         }
@@ -139,7 +140,7 @@ internal static class SessionServer
         }
         if (transport.Send(id, packet.ToByteArray(), networkEvent.Delivery) != NetworkSendResult.Accepted)
         {
-            Console.WriteLine($"连接 {id} Echo 回包排队失败，已关闭。");
+                Log.Warning($"连接 {id} Echo 回包排队失败，已关闭。");
             transport.Disconnect(id);
             sessions.Remove(id);
         }

@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace GameSync.Logging
 {
@@ -37,22 +39,42 @@ namespace GameSync.Logging
             lock (m_Sync) m_Sink = sink;
         }
 
-        public static void Debug(string message) { Write(LogLevel.Debug, message, null); }
-        public static void Info(string message) { Write(LogLevel.Info, message, null); }
-        public static void Warning(string message) { Write(LogLevel.Warning, message, null); }
-        public static void Error(string message, Exception exception = null) { Write(LogLevel.Error, message, exception); }
+        /// <summary>记录调试信息，并自动附加调用类与函数。</summary>
+        public static void Debug(string message, [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "")
+        {
+            Write(LogLevel.Debug, message, null, filePath, memberName);
+        }
 
-        public static void Exception(Exception exception)
+        /// <summary>记录一般信息，并自动附加调用类与函数。</summary>
+        public static void Info(string message, [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "")
+        {
+            Write(LogLevel.Info, message, null, filePath, memberName);
+        }
+
+        /// <summary>记录警告，并自动附加调用类与函数。</summary>
+        public static void Warning(string message, [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "")
+        {
+            Write(LogLevel.Warning, message, null, filePath, memberName);
+        }
+
+        /// <summary>记录错误，并自动附加调用类与函数。</summary>
+        public static void Error(string message, Exception exception = null, [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "")
+        {
+            Write(LogLevel.Error, message, exception, filePath, memberName);
+        }
+
+        /// <summary>记录异常，并自动附加调用类与函数。</summary>
+        public static void Exception(Exception exception, [CallerFilePath] string filePath = "", [CallerMemberName] string memberName = "")
         {
             if (exception == null)
             {
-                Error("记录异常失败：异常参数为空。");
+                Error("记录异常失败：异常参数为空。", null, filePath, memberName);
                 return;
             }
-            Write(LogLevel.Error, exception.Message, exception);
+            Write(LogLevel.Error, exception.Message, exception, filePath, memberName);
         }
 
-        private static void Write(LogLevel level, string message, Exception exception)
+        private static void Write(LogLevel level, string message, Exception exception, string filePath, string memberName)
         {
             ILogSink sink;
             lock (m_Sync)
@@ -62,7 +84,9 @@ namespace GameSync.Logging
             }
             try
             {
-                sink.Write(level, message ?? string.Empty, exception);
+                string className = Path.GetFileNameWithoutExtension(filePath);
+                string source = string.IsNullOrEmpty(className) ? memberName : className + "." + memberName;
+                sink.Write(level, "[" + source + "] " + (message ?? string.Empty), exception);
             }
             catch (Exception sinkException)
             {
@@ -70,7 +94,9 @@ namespace GameSync.Logging
                 try
                 {
                     Console.Error.WriteLine("[Error] 日志后端输出失败：" + sinkException);
-                    Console.Error.WriteLine("[" + level + "] " + message);
+                    string className = Path.GetFileNameWithoutExtension(filePath);
+                    string source = string.IsNullOrEmpty(className) ? memberName : className + "." + memberName;
+                    Console.Error.WriteLine("[" + level + "][" + source + "] " + message);
                     if (exception != null) Console.Error.WriteLine(exception);
                 }
                 catch

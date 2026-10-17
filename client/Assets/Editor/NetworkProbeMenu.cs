@@ -1,4 +1,5 @@
 using System;
+using GameSync.Logging;
 using GameSync.Protocol.Generated;
 using Google.Protobuf;
 using LiteNetLib;
@@ -59,7 +60,7 @@ public static class NetworkProbeMenu
         }
         catch (Exception exception)
         {
-            Debug.LogError("N0 探针启动失败：" + exception);
+            Log.Error("N0 探针启动失败。", exception);
             Stop();
         }
     }
@@ -97,7 +98,7 @@ public static class NetworkProbeMenu
         }
         catch (Exception exception)
         {
-            Debug.LogError("N0 探针回包失败：" + exception);
+            Log.Error("N0 探针回包失败。", exception);
             m_Failed = true;
         }
         finally
@@ -121,18 +122,18 @@ public static class NetworkProbeMenu
             }
             else if (m_ReliableReceived && m_SequencedReceived)
             {
-                Debug.Log("N0 Unity 本机探针通过：ReliableOrdered、Sequenced 均收到 Protobuf 回包。");
+                Log.Info("N0 Unity 本机探针通过：ReliableOrdered、Sequenced 均收到 Protobuf 回包。");
                 Stop();
             }
             else if (EditorApplication.timeSinceStartup >= m_Deadline)
             {
-                Debug.LogError("N0 Unity 本机探针超时；检查 UDP 9050 服务端与 Console。");
+                Log.Error("N0 Unity 本机探针超时；检查 UDP 9050 服务端与 Console。");
                 Stop();
             }
         }
         catch (Exception exception)
         {
-            Debug.LogError("N0 探针轮询失败：" + exception);
+            Log.Error("N0 探针轮询失败。", exception);
             Stop();
         }
     }

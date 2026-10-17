@@ -16,9 +16,19 @@ namespace GameSync
             Log.MinimumLevel = LogLevel.Debug;
         }
 
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+        private static void RegisterEditor()
+        {
+            // Editor 菜单可在 Play 之外输出日志，因此在编辑器加载时注册 Unity 后端。
+            Log.SetSink(new UnityLogSink());
+            Log.MinimumLevel = LogLevel.Debug;
+        }
+#endif
+
         public void Write(LogLevel level, string message, Exception exception)
         {
-            string text = "[" + level + "] " + message;
+            string text = "[" + level + "]" + message;
             if (exception != null)
             {
                 // 保留异常类型与原始调用栈，便于在 Console 定位。

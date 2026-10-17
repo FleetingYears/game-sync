@@ -1,4 +1,5 @@
 using System.Net;
+using GameSync.Logging;
 using GameSync.Protocol.Generated;
 using Google.Protobuf;
 using LiteNetLib;
@@ -74,11 +75,11 @@ internal static class NetworkProbeServer
         {
             if (!manager.Start(IPAddress.Loopback, IPAddress.IPv6Loopback, port))
             {
-                Console.Error.WriteLine("N0 探针无法监听本机 UDP 9050。");
+                Log.Error("N0 探针无法监听本机 UDP 9050。");
                 return 1;
             }
 
-            Console.WriteLine("N0 服务端探针监听本机 UDP 9050；按 Ctrl+C 停止。");
+            Log.Info("N0 服务端探针监听本机 UDP 9050；按 Ctrl+C 停止。");
             while (!cancellation.IsCancellationRequested && !failed)
             {
                 // LiteNetLib 收包线程不触碰业务；PollEvents 在服务端当前线程派发。
@@ -86,12 +87,12 @@ internal static class NetworkProbeServer
                 Thread.Sleep(5);
             }
 
-            Console.WriteLine($"探针统计：收包 {manager.Statistics.PacketsReceived}，发包 {manager.Statistics.PacketsSent}，收字节 {manager.Statistics.BytesReceived}，发字节 {manager.Statistics.BytesSent}。");
+            Log.Info($"探针统计：收包 {manager.Statistics.PacketsReceived}，发包 {manager.Statistics.PacketsSent}，收字节 {manager.Statistics.BytesReceived}，发字节 {manager.Statistics.BytesSent}。");
             return failed ? 1 : 0;
         }
         catch (Exception exception)
         {
-            Console.Error.WriteLine("N0 服务端探针失败：" + exception);
+            Log.Error("N0 服务端探针失败。", exception);
             return 1;
         }
         finally

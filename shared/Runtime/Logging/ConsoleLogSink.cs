@@ -12,7 +12,7 @@ namespace GameSync.Logging
         public void Write(LogLevel level, string message, Exception exception)
         {
             string timestamp = DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz", CultureInfo.InvariantCulture);
-            string text = "[" + timestamp + "][" + level + "] " + message;
+            string text = "[" + timestamp + "][" + level + "]" + message;
             if (exception != null) text += Environment.NewLine + exception;
             lock (m_Sync)
             {

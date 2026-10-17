@@ -1,4 +1,5 @@
 using System;
+using GameSync.Logging;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,7 @@ public static class ServerMenu
     {
         if (m_Launcher != null && !m_Launcher.HasExited)
         {
-            Debug.LogWarning("N1 服务端控制台仍在运行；请先在该控制台按 Ctrl+C 并关闭窗口。");
+            Log.Warning("N1 服务端控制台仍在运行；请先在该控制台按 Ctrl+C 并关闭窗口。");
             return;
         }
         m_Launcher?.Dispose();
@@ -27,7 +28,7 @@ public static class ServerMenu
         string scriptPath = Path.Combine(repositoryRoot, "tools", "NetworkServer", "Start.ps1");
         if (!File.Exists(scriptPath))
         {
-            Debug.LogError("找不到 N1 服务端启动脚本：" + scriptPath);
+            Log.Error("找不到 N1 服务端启动脚本：" + scriptPath);
             return;
         }
         try
@@ -44,13 +45,13 @@ public static class ServerMenu
             m_Launcher = Process.Start(startInfo);
             if (m_Launcher == null)
                 throw new InvalidOperationException("PowerShell 控制台未能启动。");
-            Debug.Log("N1 服务端控制台已打开；就绪后可运行双客户端探针。按 Ctrl+C 停止服务端。");
+            Log.Info("N1 服务端控制台已打开；就绪后可运行双客户端探针。按 Ctrl+C 停止服务端。");
         }
         catch (Exception exception)
         {
             m_Launcher?.Dispose();
             m_Launcher = null;
-            Debug.LogError("N1 服务端启动失败：" + exception);
+            Log.Error("N1 服务端启动失败。", exception);
         }
     }
 }
