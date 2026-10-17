@@ -4,7 +4,7 @@
 
 ## 代码技能
 
-- 生成、修改或重构代码前，必须读取并遵守 [.agents/skills/game-sync-code/SKILL.md](.agents/skills/game-sync-code/SKILL.md)。命名、注释、代码写法及生成流程在技能中维护；技能必须遵守本文件的全项目约束。
+- 每次编写、生成、修改、重构或修复代码前，必须读取并遵守 [.agents/skills/game-sync-code/SKILL.md](.agents/skills/game-sync-code/SKILL.md)；该技能是本仓库所有代码任务通用的编码与架构入口，不需要用户另行提出评审要求。命名、注释、代码写法及生成流程在技能中维护；技能必须遵守本文件的全项目约束。
 - 本文件维护全项目目标、架构、资产、配置、坐标、验证和仓库协作要求，避免与技能重复；用户当前明确指令优先。
 
 ## 项目目标
@@ -18,6 +18,7 @@
 - server/：C# 服务端；Program.cs 为入口，server.csproj 为项目，server.sln 为解决方案。
 - shared/：双端共用 C# 类库及 Unity 本地源码包。
 - config/Excels/{Client,Server,Shared}/：配置源表；client/Res/Config、server/Res/Config 为二进制输出。
+- client/Assets/Resources/NetworkSettings.json：客户端连接地址和端口；server/Config/NetworkSettings.json：服务端 IPv4/IPv6 监听地址和端口，随服务端构建/发布复制。
 - tools/：一个工具一个目录，包含脚本及说明；导表工具见 tools/ConfigExporter/README.md。
 - docs/status/：分阶段计划与验证记录；当前状态以 PROJECT_STATUS.md 为准。
 - client/Assets/Art/KenneyTinyDungeon/License.txt：素材授权，随素材保留；完整素材包在仓库外 art 目录。

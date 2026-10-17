@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using GameSync.Network;
 using LiteNetLib;
 
@@ -34,6 +36,9 @@ namespace GameSync.Transport
         private long m_LastTimestamp;
         /// <summary>当前启动代次中的下一个连接号。</summary>
         private int m_NextConnectionId;
+        /// <summary>UDP 端口协议允许的最小与最大值。</summary>
+        private const int MinimumUdpPort = 1;
+        private const int MaximumUdpPort = 65535;
         /// <summary>队列中的总字节数。</summary>
         private int m_QueuedBytes;
         /// <summary>为接受新连接设置的上限。</summary>
@@ -48,11 +53,17 @@ namespace GameSync.Transport
         }
 
         /// <inheritdoc />
-        public bool Listen(int port)
+        public bool Listen(string addressIPv4, string addressIPv6, int port)
         {
-            if (m_Manager != null || port < 1 || port > 65535) return false;
+            if (m_Manager != null || port < MinimumUdpPort || port > MaximumUdpPort) return false;
+            if (!IPAddress.TryParse(addressIPv4, out IPAddress ipv4Address) ||
+                ipv4Address.AddressFamily != AddressFamily.InterNetwork ||
+                !IPAddress.TryParse(addressIPv6, out IPAddress ipv6Address) ||
+                ipv6Address.AddressFamily != AddressFamily.InterNetworkV6)
+                return false;
+
             var manager = CreateManager();
-            if (!manager.StartInManualMode(port))
+            if (!manager.StartInManualMode(ipv4Address, ipv6Address, port))
             {
                 manager.Stop();
                 return false;

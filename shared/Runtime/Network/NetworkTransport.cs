@@ -71,10 +71,12 @@ namespace GameSync.Network
         /// <returns>新建的统计副本；停止后各项为零。</returns>
         NetworkTransportStats GetStats();
 
-        /// <summary>在当前线程启动 UDP 监听，端口 1～65535。</summary>
-        /// <param name="port">局域网 UDP 端口。</param>
+        /// <summary>在当前线程绑定指定 IPv4/IPv6 地址和 UDP 端口。</summary>
+        /// <param name="addressIPv4">IPv4 监听地址，使用 0.0.0.0 监听所有 IPv4 网卡。</param>
+        /// <param name="addressIPv6">IPv6 监听地址，使用 :: 监听所有 IPv6 网卡。</param>
+        /// <param name="port">局域网 UDP 端口，范围为 1～65535。</param>
         /// <returns>成功绑定时为 true。</returns>
-        bool Listen(int port);
+        bool Listen(string addressIPv4, string addressIPv6, int port);
 
         /// <summary>启动客户端并尝试连接；连接结果由后续轮询事件报告。</summary>
         /// <param name="host">服务器 IP 或主机名。</param>

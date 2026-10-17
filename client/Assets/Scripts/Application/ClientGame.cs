@@ -27,10 +27,6 @@ namespace GameSync.Application
         private readonly bool m_PreviewTouch;
         /// <summary>是否开启 N1 网络会话诊断。</summary>
         private readonly bool m_EnableNetworkSession;
-        /// <summary>N1 服务端地址。</summary>
-        private readonly string m_ServerHost;
-        /// <summary>N1 服务端 UDP 端口。</summary>
-        private readonly int m_ServerPort;
         /// <summary>是否已经进入启动流程。</summary>
         private bool m_Started;
         /// <summary>是否已经结束本次应用流程。</summary>
@@ -48,10 +44,8 @@ namespace GameSync.Application
         /// <param name="inputActions">Inspector 绑定的输入动作原资产，不可为空。</param>
         /// <param name="previewTouch">true 时桌面也显示触屏控件；移动平台始终显示。</param>
         /// <param name="enableNetworkSession">true 时启动 N1 局域网会话诊断。</param>
-        /// <param name="serverHost">诊断服务端地址；诊断关闭时不使用。</param>
-        /// <param name="serverPort">诊断服务端 UDP 端口；诊断关闭时不使用。</param>
         public ClientGame(MapView map, Camera camera, GameHudView hud, InputActionAsset inputActions,
-            bool previewTouch = false, bool enableNetworkSession = false, string serverHost = "127.0.0.1", int serverPort = 9050)
+            bool previewTouch, bool enableNetworkSession)
         {
             m_Map = map ?? throw new ArgumentNullException(nameof(map));
             m_Camera = camera != null ? camera : throw new ArgumentNullException(nameof(camera));
@@ -60,8 +54,6 @@ namespace GameSync.Application
                 throw new ArgumentException("请在 GameMainBootstrap 绑定 PlayerControls.inputactions，并重新加载场景。");
             m_PreviewTouch = previewTouch;
             m_EnableNetworkSession = enableNetworkSession;
-            m_ServerHost = serverHost;
-            m_ServerPort = serverPort;
         }
 
         /// <summary>加载配置和静态展示外观，然后启动输入与可选网络诊断。</summary>
@@ -80,7 +72,7 @@ namespace GameSync.Application
             if (m_Disposed) return false;
             // 触屏控件须先于输入读取器创建；网络诊断只在输入准备后启动。
             InputManager.Instance.Start(m_Hud, m_Camera, m_InputActions, m_PreviewTouch, PresentationManager.PreviewOrigin);
-            NetworkManager.Instance.Start(m_EnableNetworkSession, m_ServerHost, m_ServerPort);
+            NetworkManager.Instance.Start(m_EnableNetworkSession);
             m_Hud.SetStatus("输入已接入：WASD/方向键移动意图，鼠标瞄准、左键攻击；尚未接入模拟");
             return true;
         }

@@ -1,0 +1,5 @@
+{
+  "ListenAddressIPv4": "0.0.0.0",
+  "ListenAddressIPv6": "::",
+  "ListenPort": 9050
+}

@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package gamesync.protocol;
+option csharp_namespace = "GameSync.Protocol.Generated";
+
+enum ErrorCode {
+  ERROR_CODE_NONE = 0;
+  ERROR_CODE_FAILURE = 1;
+  ERROR_CODE_VERSION_MISMATCH = 2;
+}
+
+// protocol_id = 1101
+message SessionHelloRequest {
+  uint32 major_version;
+}
+// protocol_id = 1102
+message SessionHelloResponse {
+  bool accepted;
+  uint32 major_version;
+  uint32 session_id;
+  string reason;
+  uint32 player_id;
+}
+
+// protocol_id = 1003
+message SessionEchoRequest {
+  uint32 request_id;
+  bytes payload;
+}
+
+// protocol_id = 1004
+message SessionEchoResponse {
+  uint32 request_id;
+  bytes payload;
+}
+
+// protocol_id = 1005
+message JoinRoomRequest {
+  uint64 request_id;
+  string room_code;
+  string display_name;
+}
+
+// protocol_id = 1006
+message LeaveRoomRequest {
+  uint64 request_id;
+}
+
+// protocol_id = 1007
+message SetReadyRequest {
+  uint64 request_id;
+  bool ready;
+}
+
+// protocol_id = 1008
+message StartRoomRequest {
+  uint64 request_id;
+}
+
+// protocol_id = 1009
+message ClientInputRequest {
+  uint64 request_id;
+  uint32 input_sequence;
+  bytes payload;
+}
+
+enum RoomResultCode {
+  ROOM_RESULT_UNSPECIFIED = 0;
+  ROOM_RESULT_OK = 1;
+  ROOM_RESULT_INVALID_REQUEST = 2;
+  ROOM_RESULT_ROOM_FULL = 3;
+  ROOM_RESULT_NOT_IN_ROOM = 4;
+  ROOM_RESULT_NOT_READY = 5;
+  ROOM_RESULT_ALREADY_STARTED = 6;
+  ROOM_RESULT_NOT_IMPLEMENTED = 7;
+  ROOM_RESULT_STALE_REQUEST = 8;
+}
+
+message RoomPlayer {
+  uint32 player_id;
+  string display_name;
+  bool ready;
+}
+
+message RoomSnapshot {
+  uint32 session_id;
+  uint32 player_id;
+  string room_code;
+  bool in_room;
+  repeated RoomPlayer players;
+  bool started;
+}
+
+// protocol_id = 1010
+message RoomOperationResponse {
+  uint64 request_id;
+  RoomResultCode result;
+  string message;
+  RoomSnapshot snapshot;
+}
+
+// protocol_id = 1011
+message RoomStateNotification {
+  RoomSnapshot snapshot;
+}

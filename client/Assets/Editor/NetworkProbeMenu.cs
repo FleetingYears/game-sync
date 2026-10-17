@@ -12,9 +12,6 @@ using UnityEngine;
 [InitializeOnLoad]
 public static class NetworkProbeMenu
 {
-    /// <summary>探针服务端固定使用的本机 UDP 端口。</summary>
-    private const int ProbePort = 9050;
-
     /// <summary>当前一次探针连接，完成或超时后释放。</summary>
     private static NetManager m_NetManager;
 
@@ -36,11 +33,12 @@ public static class NetworkProbeMenu
         EditorApplication.quitting += Stop;
     }
 
-    /// <summary>从菜单启动一次五秒内的本机双通道消息往返。</summary>
+    /// <summary>连接当前场景配置的服务端，启动一次五秒内的双通道消息往返。</summary>
     [MenuItem("GameSync/网络/N0 本机探针")]
     private static void Start()
     {
         Stop();
+        if (!NetworkMenuSettings.TryGetEndpoint(out string host, out int port)) return;
         try
         {
             var listener = new EventBasedNetListener();
@@ -54,7 +52,7 @@ public static class NetworkProbeMenu
                 throw new InvalidOperationException("LiteNetLib UDP 启动失败。");
 
             m_Deadline = EditorApplication.timeSinceStartup + 5;
-            m_NetManager.Connect("127.0.0.1", ProbePort, "game-sync-n0");
+            m_NetManager.Connect(host, port, "game-sync-n0");
             // PollEvents 把收包回调交给 Editor 主线程，避免后台线程接触 Unity API。
             EditorApplication.update += Poll;
         }
@@ -70,7 +68,9 @@ public static class NetworkProbeMenu
     private static void OnConnected(NetPeer peer)
     {
         peer.Send(new NetworkProbe { Sequence = 1, Text = "N0" }.ToByteArray(), 0, DeliveryMethod.ReliableOrdered);
+        Log.Info("N0 发包：协议 NetworkProbe，ReliableOrdered，序号 1。");
         peer.Send(new NetworkProbe { Sequence = 2, Text = "N0" }.ToByteArray(), 0, DeliveryMethod.Sequenced);
+        Log.Info("N0 发包：协议 NetworkProbe，Sequenced，序号 2。");
     }
 
     /// <summary>验证服务端回传的消息与实际交付方式。</summary>
@@ -86,6 +86,7 @@ public static class NetworkProbeMenu
                 throw new InvalidOperationException("探针回包通道或长度非法。");
 
             var message = NetworkProbe.Parser.ParseFrom(reader.GetRemainingBytes());
+            Log.Info($"N0 收包：协议 NetworkProbe，{method}，序号 {message.Sequence}，负载 {reader.AvailableBytes} 字节。");
             if (message.Text != "N0")
                 throw new InvalidOperationException("探针回包内容非法。");
 
@@ -127,7 +128,7 @@ public static class NetworkProbeMenu
             }
             else if (EditorApplication.timeSinceStartup >= m_Deadline)
             {
-                Log.Error("N0 Unity 本机探针超时；检查 UDP 9050 服务端与 Console。");
+                Log.Error("N0 Unity 探针超时；检查配置的服务端地址、UDP 端口与 Console。");
                 Stop();
             }
         }

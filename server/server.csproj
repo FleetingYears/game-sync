@@ -13,6 +13,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Content Include="Config/NetworkSettings.json">
+            <TargetPath>Config/NetworkSettings.json</TargetPath>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
         <!-- 保持生成类中的相对路径，复制配置到构建和发布目录。 -->
         <Content Include="Res/Config/**/*.bytes">
             <TargetPath>server/Res/Config/%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
