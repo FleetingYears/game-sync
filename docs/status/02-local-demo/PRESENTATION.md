@@ -7,7 +7,8 @@
 - Bootstrap/GameMainBootstrap：绑定场景 Units、相机和地图尺寸，启动/退出应用，转发 LateUpdate。
 
 相机优先使用 Inspector 显式引用；未绑定时，Bootstrap 查找本场景唯一启用且标记为 MainCamera 的相机，兼容新增字段尚未绑定的场景实例。不存在或有多个候选时中止初始化并提示明确绑定，不使用跨场景的 Camera.main。
-- Application/ClientGame：加载配置、协调公共表现生命周期；当前 StartAsync 内的三个单位仅是静态预览，接入模拟时替换这段展示数据。
+- Application/ClientGame：加载配置，并按顺序启动、更新和停止各功能管理器；不保存单位展示细节。
+- View/PresentationManager：场景期单例，接管游戏相机与 UnitViewManager，创建三单位静态预览，显示输入及网络诊断状态；停止时取消创建并归还相机。接入模拟时替换预览数据。
 - View/Unit/UnitViewManager：ID 映射、异步创建、单个移除和整体释放。CreateAsync 失败、取消或 ID 重复返回 null；Remove 同时支持已生成和正在加载的单位。释放后创建返回 null，查询/移除返回 false。
 - View/Unit/UnitViewFactory：加载 unit Prefab 和指定 Sprite，初始化成功后才返回外观；失败销毁半成品。底层资源失败已记录日志，工厂其他异常由管理器统一记录一次。
 - View/Unit/UnitView：单体显示入口；组合 SpriteAnimationView、UnitFeedbackView 和 UI/HealthBarView，不保存游戏生命值或模拟帧。
@@ -21,7 +22,7 @@ UI 根节点 GameUI 与独立 UICamera 在运行时创建于 Bootstrap 所属场
 
 ## 接入接口
 
-通过 ClientGame.UnitViews 创建和查询外观。CreateAsync 的位置为 Vector2，UnitView.SetPosition 始终写入 Z=0，不自行插值。SetFacing 设置角色左右翻转；SetProjectileDirection 使用原图朝上的约定旋转箭矢。弹射物与人物复用 Unit Prefab 和同一 ID 空间，调用方必须分配唯一 ID，弹道结束后调用 Remove；表现层不按时间推导弹道和命中。
+通过 PresentationManager.Instance.UnitViews 创建和查询当前场景外观；ClientGame.UnitViews 保留转发入口。场景未启动或已退出时该属性为空。CreateAsync 的位置为 Vector2，UnitView.SetPosition 始终写入 Z=0，不自行插值。SetFacing 设置角色左右翻转；SetProjectileDirection 使用原图朝上的约定旋转箭矢。弹射物与人物复用 Unit Prefab 和同一 ID 空间，调用方必须分配唯一 ID，弹道结束后调用 Remove；表现层不按时间推导弹道和命中。
 
 SetHealth 接收 current、maximum 和投影相机，只缓存归一化显示比例；无效输入隐藏血条。SetVisible(false/true) 对应外部死亡/重生显示，生命值和重生位置仍需调用方更新。隐藏时停止闪色与正在播放的音效。
 
@@ -30,6 +31,8 @@ PlayAnimation 接收已经加载的 Sprite 数组、帧率和循环标记，复�
 PlayHit 触发 0.12 秒受击闪色，可带 AudioClip；PlaySound 单独播放已加载音频。当前资源表仅支持 Sprite/Prefab，因此音效需由调用方提供 AudioClip，本次没有扩展资源表或添加音频。重复事件会重复播放，状态同步/帧同步适配器负责事件去重，不能每帧从持续受伤状态触发一次。
 
 ## 验证与待验收
+
+2026-10-16：ClientGame 的静态预览和相机管理移至 PresentationManager。新增单例只在场景期持有 View，退出时清空引用并允许下次 Play 重新初始化；使用本机 Unity 生成项目编译新增源码通过（0 错误，6 项为 Unity 生成项目的既有程序集版本冲突警告）。用户提供的重构后 Unity Play 截图显示两名角色、箭矢、HUD、GameUI 和 UICamera，Console 计数为 0 日志、0 警告、0 错误；用户确认停止后再次进入 Play 仍为 0 错误。
 
 用户已提供 1920×1080、Game 预览 Scale=0.5 的运行截图：角色、血条及完整中文 HUD 可见。先前 Scale=0.59 时的左右裁切由预览超过窗口宽度造成。本记录仅确认截图中的显示，不覆盖 Console、其他分辨率或退出清理。
 

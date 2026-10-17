@@ -16,13 +16,14 @@ GameMain 场景根节点 EventSystem 已保存固定 Inspector 配置：EventSys
 
 ## 文件职责
 
-阅读代码建议从 GameMainBootstrap → ClientGame.StartAsync → PlayerInputReader 开始；触屏 UI 的配置关系在 TouchInputView 中说明。函数参数的坐标系、单位、资产所有权和输入消费语义已补充 XML 文档；关键 API 调用旁说明采用该流程的原因。
+阅读代码建议从 GameMainBootstrap → ClientGame.StartAsync → InputManager → PlayerInputReader 开始；触屏 UI 的配置关系在 TouchInputView 中说明。函数参数的坐标系、单位、资产所有权和输入消费语义已补充 XML 文档；关键 API 调用旁说明采用该流程的原因。
 
 - Input/PlayerInputReader：读取配置中的动作，提供归一化移动、瞄准方向、攻击持续状态及消费一次的按下边沿。鼠标位置先通过游戏相机投影到 XY 平面；触屏瞄准沿用最近移动方向，默认向右。
+- Input/InputManager：场景期单例，先创建触屏控件再启用读取器，缓存初始化前的焦点状态，每帧消费并输出输入意图；HUD 预览由 PresentationManager 显示。停止时清空状态，可在下一次 Play 重新初始化。
 - Input/PlayerInputState：本地操作意图，不是共享模拟状态或网络协议。多个短按在一次消费前合并为一次按下意图，未实现攻击次数队列。
 - View/UI/TouchInputView：构造操作区和内置屏幕控件、适配安全区并标记虚拟设备；使用场景预先配置的 UI 输入模块。该布局目前沿用公共 UI 的运行时创建方式，尚未抽取 Prefab。
 - Bootstrap：绑定输入资产，传递失焦/暂停状态，支持 Inspector 的 Preview Touch Controls 开关。
-- ClientGame：初始化并释放输入，每个 LateUpdate 消费一次输入用于 HUD 预览；显示移动、瞄准、攻击状态及累计按下次数。失焦、暂停、退出时禁用动作并清理输入。
+- ClientGame：负责输入管理器与其他功能管理器的启动顺序、逐帧调用和退出顺序，不直接处理动作回调或 HUD 预览格式。
 
 现有第二个人物仍为静态展示。不会根据输入移动 Transform、发射弹射物或改变生命值。瞄准原点目前使用展示角色的明确初始坐标 (-4.5,6.5)，没有从 Transform 回读逻辑位置。后续模拟接入时替换预览消费入口，由固定 Tick 适配器提供真实逻辑位置并量化输入；不要将渲染帧的 CurrentInput 直接当作网络帧输入。
 
@@ -37,6 +38,8 @@ GameMain 场景根节点 EventSystem 已保存固定 Inspector 配置：EventSys
 目前 Player 资源加载后端尚未实现，因此移动端完整游戏启动不能视为已可交付；触屏输入接入代码也不代表 Android/iOS 构建和真机测试通过。
 
 ## 验证记录
+
+- 2026-10-16：按功能将输入读取器与触屏控件从 ClientGame 移至 InputManager，HUD 输入预览移至 PresentationManager。新增源码通过本机 Unity 生成项目编译（0 错误；6 项为 Unity 生成项目的既有程序集版本冲突警告）。用户提供的 Unity Play 截图显示输入预览 HUD 且 Console 计数全为 0；用户随后确认退出 Play 再进入仍为 0 错误。该验证未覆盖按键变化、焦点切换或触屏操作。
 
 - 2026-10-16：用户 Play 截图显示输入预览 HUD 已更新瞄准值和攻击按下计数，确认键鼠预览链路；当前桌面触屏预览关闭，触屏与真机尚未验证。本次发布前重跑服务端构建和实际 Unity/Input System API 兼容编译，均通过，0 警告、0 错误。
 

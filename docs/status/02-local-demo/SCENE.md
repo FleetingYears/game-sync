@@ -46,4 +46,4 @@ GameMain 的 MapRoot 挂载 GameMainBootstrap，引用 MapRoot/Units 与 MainCam
 
 ### 客户端职责拆分
 
-Bootstrap/GameMainBootstrap 连接 Units、相机和地图尺寸，创建 HUD 并启动、释放 Application/ClientGame。ClientGame 初始化配置并协调单位管理器和相机；具体显示由 View 负责。创建期间退出场景或移除单位会取消后续生成；同 ID 的旧请求完成时不会清除新的创建请求。详见 [公共表现接入与验收](PRESENTATION.md)。本次已通过兼容编译，Unity 内运行仍待复查；上文用户确认的 Play 结果仅针对此前单个玩家版本。
+Bootstrap/GameMainBootstrap 连接 Units、相机和地图尺寸，创建 HUD 并启动、释放 Application/ClientGame。ClientGame 加载配置并协调 PresentationManager、InputManager 和 NetworkManager；具体显示由 View 负责。创建期间退出场景或移除单位会取消后续生成；同 ID 的旧请求完成时不会清除新的创建请求。详见 [公共表现接入与验收](PRESENTATION.md)。本次重构通过本机 Unity 生成项目编译，用户提供的 Play 截图显示场景和 HUD 且 Console 计数为零；用户确认退出 Play 后再次进入仍为 0 错误。上文用户确认的 Play 结果仅针对此前单个玩家版本。

@@ -9,6 +9,7 @@
 - `LiteNetTransport` 使用 LiteNetLib 手动模式；每次 Poll 限制每个 UDP Socket 最多接收 16 包，最多向应用派发 32 个事件，最多提交 16 条待发消息。应用待发队列每连接 64 条/64 KiB、全局 256 条/256 KiB，保留最多 2 秒；可靠库队列达到 64 包时拒绝或暂停提交。过大的可靠消息（超过 4096 字节）与按序消息（超过 1000 字节）在入队前拒绝。由于 `PollEvents` 的库内部处理无法被应用的 32 事件上限中途打断，单次轮询的实际耗时仍需负载实测。
 - `SessionServer` 监听可选 UDP 端口，最多接受两个传输连接；五秒内完成 N1 主版本握手后，回传两个交付方式的 Protobuf Echo。拒绝非法方向、阶段、长度或解析失败的消息。N1 分配的会话号仅在当前服务端启动代次内有效，不是 N2 的房间玩家身份。
 - `SessionClient` 在 Unity 主线程轮询，连接与握手各有五秒超时，Echo 有五秒截止时间；Stop/Dispose 清理旧连接、消息和回调，重新连接不重放旧队列。当前没有自动重试；用户重新启动或调用 Connect 才建立新会话。
+- 2026-10-16：GameMain 的可选会话入口已移至客户端 `NetworkManager` 场景期单例，由 `ClientGame` 在输入初始化后启动、每帧轮询并在退出时停止；`SessionClient` 协议和连接行为未改。该 Inspector 开关下的 GameMain Play 路径仍待实测。
 - `dotnet run --project server/server.csproj` 现在默认进入持续运行的 N1 服务端主循环。`tools/NetworkServer/Start.ps1` 从仓库相对路径启动同一服务端；Editor 菜单 `GameSync/网络/启动 N1 服务端` 打开可见控制台执行该脚本，Ctrl+C 停止并关闭窗口。菜单使用 `-NoExit` 保留窗口，启动失败时可直接查看原始错误。默认端口与 N1 Editor 双客户端探针均为 9050。
 
 静态连接 key 只用于筛选，不是身份认证或加密。N2 再定义正式业务封套、类型注册、房间与玩家身份；当前 Echo 会话不得用于玩法输入。
